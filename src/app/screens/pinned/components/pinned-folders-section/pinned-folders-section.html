@@ -1,0 +1,61 @@
+<section aria-labelledby="pf" class="space-y-3">
+  <h2 id="pf" class="text-sm font-semibold text-muted-foreground">
+    Папки · {{ folders().length }}
+  </h2>
+  <ul class="grid gap-3 md:grid-cols-2">
+    @for (folder of folders(); track folder.id) {
+      @let owner = roleState.getUserById(folder.createdBy);
+      <li
+        class="flex items-center gap-4 rounded-2xl border border-pin/40 bg-pin/10 p-4"
+      >
+        <ui-file-icon kind="folder" size="lg" />
+        <div class="min-w-0 flex-1">
+          <a
+            [routerLink]="['/files', folder.id]"
+            class="block truncate font-medium hover:text-primary"
+          >
+            {{ folder.name }}
+          </a>
+          <p class="truncate text-xs text-muted-foreground">
+            {{ folder.pathLabel }} · {{ folder.totalItemsCount }} елем.
+          </p>
+          @if (owner) {
+            <p
+              class="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"
+            >
+              <ui-avatar
+                [initials]="getInitials(owner)"
+                [tone]="getTone(owner)"
+                size="xs"
+              />
+              {{ getFullName(owner) }}
+            </p>
+          }
+        </div>
+        <div class="flex shrink-0 flex-col gap-1">
+          <a
+            [routerLink]="['/files', folder.id]"
+            uiButton
+            variant="outline"
+            size="sm"
+          >
+            <ui-icon name="folder-open" />
+            Відкрити
+          </a>
+          @if (roleState.can().canPin) {
+            <button
+              type="button"
+              uiButton
+              variant="ghost"
+              size="sm"
+              (click)="unpinRequested.emit(folder.id)"
+            >
+              <ui-icon name="pin-off" />
+              Відкріпити
+            </button>
+          }
+        </div>
+      </li>
+    }
+  </ul>
+</section>

@@ -1,0 +1,118 @@
+<ui-dialog
+  [open]="inviteOpen()"
+  [title]="'Запросити до групи ' + groupName()"
+  description="Ми надішлемо лист із персональним посиланням. Воно діє 3 дні."
+  (openChange)="inviteOpenChange.emit($event)"
+>
+  <div class="grid gap-2">
+    <label uiLabel for="invite-email">Email студента</label>
+    <input
+      uiInput
+      id="invite-email"
+      type="email"
+      placeholder="name@lpi.edu.ua"
+      [ngModel]="inviteEmail()"
+      (ngModelChange)="inviteEmail.set($event)"
+      (keydown.enter)="submitInvite()"
+    />
+  </div>
+  <ng-container dialogFooter>
+    <button
+      uiButton
+      variant="outline"
+      type="button"
+      (click)="inviteOpenChange.emit(false)"
+    >
+      Скасувати
+    </button>
+    <button uiButton type="button" (click)="submitInvite()">
+      <ui-icon name="mail" />
+      Надіслати
+    </button>
+  </ng-container>
+</ui-dialog>
+
+<ui-dialog
+  [open]="activeAction()?.type === 'edit'"
+  title="Редагувати дані"
+  [description]="activeUser()?.fullName || ''"
+  (openChange)="!$event && closeAction.emit()"
+>
+  <div class="grid gap-4">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="grid gap-2">
+        <label uiLabel for="e-first">Ім'я</label>
+        <input
+          uiInput
+          id="e-first"
+          [ngModel]="editFirstName()"
+          (ngModelChange)="editFirstName.set($event)"
+        />
+      </div>
+      <div class="grid gap-2">
+        <label uiLabel for="e-last">Прізвище</label>
+        <input
+          uiInput
+          id="e-last"
+          [ngModel]="editLastName()"
+          (ngModelChange)="editLastName.set($event)"
+        />
+      </div>
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="e-mid">По батькові</label>
+      <input
+        uiInput
+        id="e-mid"
+        [ngModel]="editMiddleName()"
+        (ngModelChange)="editMiddleName.set($event)"
+      />
+    </div>
+  </div>
+  <ng-container dialogFooter>
+    <button uiButton variant="outline" type="button" (click)="closeAction.emit()">
+      Скасувати
+    </button>
+    <button uiButton type="button" (click)="submitEdit()">
+      Зберегти
+    </button>
+  </ng-container>
+</ui-dialog>
+
+<ui-dialog
+  [open]="activeAction()?.type === 'starosta'"
+  title="Призначити старостою?"
+  [description]="
+    (activeUser()?.fullName || '') +
+    ' отримає права старости: закріплення, перейменування чужих файлів, керування завантаженням. Поточний староста стане звичайним студентом.'
+  "
+  (openChange)="!$event && closeAction.emit()"
+>
+  <ng-container dialogFooter>
+    <button uiButton variant="outline" type="button" (click)="closeAction.emit()">
+      Скасувати
+    </button>
+    <button uiButton type="button" (click)="submitAssignStarosta()">
+      Призначити
+    </button>
+  </ng-container>
+</ui-dialog>
+
+<ui-dialog
+  [open]="activeAction()?.type === 'remove'"
+  title="Виключити з групи?"
+  [description]="
+    (activeUser()?.fullName || '') +
+    ' втратить доступ до матеріалів. Завантажені файли залишаться в групі.'
+  "
+  (openChange)="!$event && closeAction.emit()"
+>
+  <ng-container dialogFooter>
+    <button uiButton variant="outline" type="button" (click)="closeAction.emit()">
+      Скасувати
+    </button>
+    <button uiButton variant="destructive" type="button" (click)="submitRemove()">
+      Виключити
+    </button>
+  </ng-container>
+</ui-dialog>

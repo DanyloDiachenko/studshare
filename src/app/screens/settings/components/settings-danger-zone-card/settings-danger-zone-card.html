@@ -1,0 +1,26 @@
+<section class="rounded-2xl border border-destructive/30 bg-destructive/5">
+  <div class="border-b border-destructive/20 p-5">
+    <h2 class="font-semibold text-destructive">Небезпечна зона</h2>
+    <p class="mt-1 text-sm text-muted-foreground">Ці дії не можна скасувати.</p>
+  </div>
+  <div class="flex flex-wrap items-center justify-between gap-4 p-5">
+    <div>
+      <p class="text-sm font-medium">Видалити групу</p>
+      <p class="text-sm text-muted-foreground">
+        Усі файли, папки та історія будуть видалені назавжди.
+      </p>
+    </div>
+    <button
+      uiButton
+      variant="destructive"
+      type="button"
+      data-slot="dialog-trigger"
+      aria-haspopup="dialog"
+      [attr.aria-expanded]="deleteDialogOpen()"
+      [disabled]="!canEdit()"
+      (click)="openDeleteDialog.emit()"
+    >
+      Видалити групу
+    </button>
+  </div>
+</section>

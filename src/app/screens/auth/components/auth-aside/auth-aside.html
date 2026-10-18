@@ -1,0 +1,29 @@
+<aside
+  class="relative hidden overflow-hidden bg-sidebar p-12 text-sidebar-foreground lg:flex lg:flex-col lg:justify-end"
+>
+  <div
+    aria-hidden="true"
+    class="absolute -top-24 -right-24 size-96 rounded-full bg-sidebar-primary/20 blur-3xl"
+  ></div>
+  <div
+    aria-hidden="true"
+    class="absolute bottom-40 -left-20 size-72 rounded-full bg-pin/15 blur-3xl"
+  ></div>
+  <div class="relative max-w-md">
+    <p class="text-3xl font-semibold leading-snug text-white text-balance">
+      Староста закріплює, студкуратор запрошує, група вчиться.
+    </p>
+    <ul class="mt-8 space-y-4">
+      @for (item of highlights; track item.text) {
+        <li class="flex items-center gap-3 text-sm">
+          <span
+            class="grid size-9 shrink-0 place-items-center rounded-lg bg-sidebar-accent text-sidebar-primary"
+          >
+            <ui-icon [name]="item.icon" svgClass="size-4" />
+          </span>
+          {{ item.text }}
+        </li>
+      }
+    </ul>
+  </div>
+</aside>

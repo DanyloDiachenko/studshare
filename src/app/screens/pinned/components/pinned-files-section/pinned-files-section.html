@@ -1,0 +1,46 @@
+<section aria-labelledby="pfl" class="space-y-3">
+  <h2 id="pfl" class="text-sm font-semibold text-muted-foreground">
+    Файли · {{ files().length }}
+  </h2>
+  <ul class="divide-y overflow-hidden rounded-2xl border bg-card">
+    @for (file of files(); track file.id) {
+      <li class="flex items-center gap-4 p-4">
+        <ui-file-icon [kind]="file.type" size="lg" />
+        <div class="min-w-0 flex-1">
+          <p class="flex items-center gap-2 font-medium">
+            <span class="truncate">{{ file.name }}</span>
+            <ui-icon
+              name="pin"
+              svgClass="size-3.5 shrink-0 fill-pin text-pin-foreground"
+            />
+          </p>
+          <p class="truncate text-xs text-muted-foreground">
+            {{ file.pathLabel }} · {{ file.sizeLabel }} · {{ file.uploadedAt }}
+          </p>
+        </div>
+        <button
+          type="button"
+          uiButton
+          variant="outline"
+          size="sm"
+          class="shrink-0"
+        >
+          <ui-icon name="download" />
+          <span class="hidden sm:inline">Завантажити</span>
+        </button>
+        @if (roleState.can().canPin) {
+          <button
+            type="button"
+            uiButton
+            variant="ghost"
+            size="icon-sm"
+            [attr.aria-label]="'Відкріпити ' + file.name"
+            (click)="unpinRequested.emit(file.id)"
+          >
+            <ui-icon name="pin-off" />
+          </button>
+        }
+      </li>
+    }
+  </ul>
+</section>

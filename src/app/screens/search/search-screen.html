@@ -1,0 +1,44 @@
+<div class="mx-auto max-w-4xl space-y-8">
+  <ui-page-header
+    title="Пошук"
+    description="Шукайте за назвою файлу або папки в усіх матеріалах групи."
+  />
+
+  <form
+    action="/search"
+    role="search"
+    class="flex gap-2"
+    (submit)="onSubmit($event, searchInput.value)"
+  >
+    <div class="relative flex-1">
+      <ui-icon
+        name="search"
+        svgClass="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground"
+      />
+      <input
+        #searchInput
+        type="search"
+        name="q"
+        aria-label="Пошуковий запит"
+        placeholder="Наприклад, «конспект» або «ЛР2»"
+        [value]="filesState.searchQuery()"
+        class="h-12 w-full rounded-xl border bg-card pr-4 pl-12 text-base outline-none placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/30"
+      />
+    </div>
+    <button type="submit" uiButton size="lg">Знайти</button>
+  </form>
+
+  @if (!filesState.searchResultsView().query) {
+    <app-search-suggestions
+      [suggestions]="filesState.searchSuggestions"
+    />
+  } @else if (filesState.searchResultsView().totalCount === 0) {
+    <app-search-empty-state
+      [query]="filesState.searchResultsView().query"
+    />
+  } @else {
+    <app-search-results-list
+      [results]="filesState.searchResultsView()"
+    />
+  }
+</div>

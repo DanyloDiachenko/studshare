@@ -1,0 +1,8 @@
+<span [class]="badgeClass()">
+  @if (variant() === 'hero-pill') {
+    <span class="size-1.5 rounded-full bg-pin" aria-hidden="true"></span>
+  } @else if (roleIcon(); as icon) {
+    <ui-icon [name]="icon" svgClass="size-3" />
+  }
+  <ng-content />
+</span>

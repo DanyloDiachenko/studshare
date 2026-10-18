@@ -1,0 +1,49 @@
+<section class="rounded-2xl border bg-card">
+  <div class="border-b p-5">
+    <h2 class="font-semibold">Особисті дані</h2>
+  </div>
+  <div class="space-y-4 p-5">
+    <div class="grid gap-3 sm:grid-cols-3">
+      <div class="grid gap-2">
+        <label uiLabel for="p-last">Прізвище</label>
+        <input
+          uiInput
+          id="p-last"
+          [ngModel]="lastName()"
+          (ngModelChange)="lastName.set($event)"
+        />
+      </div>
+      <div class="grid gap-2">
+        <label uiLabel for="p-first">Ім'я</label>
+        <input
+          uiInput
+          id="p-first"
+          [ngModel]="firstName()"
+          (ngModelChange)="firstName.set($event)"
+        />
+      </div>
+      <div class="grid gap-2">
+        <label uiLabel for="p-mid">По батькові</label>
+        <input
+          uiInput
+          id="p-mid"
+          [ngModel]="middleName()"
+          (ngModelChange)="middleName.set($event)"
+        />
+      </div>
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="p-email">Email</label>
+      <input
+        uiInput
+        id="p-email"
+        type="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
+      />
+    </div>
+    <button uiButton type="button" (click)="onSave()">
+      Зберегти
+    </button>
+  </div>
+</section>

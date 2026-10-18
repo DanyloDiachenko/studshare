@@ -1,0 +1,18 @@
+<div class="mx-auto max-w-5xl space-y-8">
+  <ui-page-header
+    title="Закріплене"
+    description="Важливі папки та файли, які староста закріпив для всієї групи — розклад, методички, дедлайни."
+  />
+
+  <div class="space-y-8">
+    <app-pinned-folders-section
+      [folders]="filesState.pinnedFoldersView()"
+      (unpinRequested)="filesState.togglePinById($event, 'folder')"
+    />
+
+    <app-pinned-files-section
+      [files]="filesState.pinnedFilesView()"
+      (unpinRequested)="filesState.togglePinById($event, 'file')"
+    />
+  </div>
+</div>

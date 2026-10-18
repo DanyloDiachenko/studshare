@@ -1,0 +1,56 @@
+<div class="mx-auto max-w-5xl space-y-8">
+  <ui-page-header
+    title="Учасники"
+    [description]="headerDescription()"
+  >
+    @if (can().canManageMembers) {
+      <ng-container pageActions>
+        <button
+          uiButton
+          type="button"
+          data-slot="dialog-trigger"
+          aria-haspopup="dialog"
+          [attr.aria-expanded]="inviteDialogOpen()"
+          (click)="inviteDialogOpen.set(true)"
+        >
+          <ui-icon name="user-plus" />
+          Запросити учасника
+        </button>
+      </ng-container>
+    }
+  </ui-page-header>
+
+  @if (!can().canManageMembers) {
+    <p class="rounded-xl border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+      Склад групи змінює лише студкуратор. Ви можете переглядати список{{
+        can().canToggleUpload ? ' і керувати правом завантаження.' : '.'
+      }}
+    </p>
+  }
+
+  <app-members-active-table
+    [members]="members()"
+    [permissions]="can()"
+    (toggleUpload)="onToggleUpload($event)"
+    (memberAction)="activeAction.set($event)"
+  />
+
+  <app-members-pending-list
+    [invitations]="invitations()"
+    [canManageMembers]="can().canManageMembers"
+    (resendInvitation)="onResendInvitation($event)"
+    (cancelInvitation)="onCancelInvitation($event)"
+  />
+</div>
+
+<app-members-dialogs
+  [groupName]="group().name"
+  [inviteOpen]="inviteDialogOpen()"
+  [activeAction]="activeAction()"
+  (inviteOpenChange)="inviteDialogOpen.set($event)"
+  (inviteSubmitted)="onInviteMember($event)"
+  (closeAction)="activeAction.set(null)"
+  (editSubmitted)="onEditMember($event)"
+  (assignStarostaSubmitted)="onAssignStarosta($event)"
+  (removeSubmitted)="onRemoveMember($event)"
+/>

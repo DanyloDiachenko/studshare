@@ -1,0 +1,62 @@
+<div class="overflow-hidden rounded-2xl border bg-card">
+  <table class="w-full text-sm">
+    <thead>
+      <tr
+        class="border-b bg-muted/50 text-left text-xs font-medium text-muted-foreground"
+      >
+        <th scope="col" class="px-4 py-2.5">Назва</th>
+        <th scope="col" class="hidden px-4 py-2.5 md:table-cell">Автор</th>
+        <th scope="col" class="hidden px-4 py-2.5 sm:table-cell">Оновлено</th>
+        <th scope="col" class="hidden px-4 py-2.5 sm:table-cell">Розмір</th>
+        <th scope="col" class="w-12 px-2 py-2.5">
+          <span class="sr-only">Дії</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of entries(); track entry.kind + '-' + entry.id) {
+        @let owner = roleState.getUserById(entry.ownerId);
+        <tr
+          class="border-b transition-colors last:border-b-0 hover:bg-muted/40"
+        >
+          <td class="px-4 py-2.5">
+            <div class="flex min-w-0 items-center gap-3">
+              <ui-file-icon
+                [kind]="entry.kind === 'folder' ? 'folder' : (entry.type ?? 'pdf')"
+              />
+              <app-file-entry-title [entry]="entry" />
+            </div>
+          </td>
+          <td class="hidden px-4 py-2.5 md:table-cell">
+            @if (owner) {
+              <div class="flex items-center gap-2">
+                <ui-avatar
+                  [initials]="getInitials(owner)"
+                  [tone]="getTone(owner)"
+                  size="sm"
+                />
+                <span class="text-muted-foreground">
+                  {{ getFullName(owner) }}
+                </span>
+              </div>
+            }
+          </td>
+          <td class="hidden px-4 py-2.5 text-muted-foreground sm:table-cell">
+            {{ entry.updatedAt }}
+          </td>
+          <td class="hidden px-4 py-2.5 text-muted-foreground sm:table-cell">
+            {{ entry.meta }}
+          </td>
+          <td class="px-2 py-2.5 text-right">
+            <app-file-entry-actions
+              [entry]="entry"
+              (renameRequested)="renameRequested.emit($event)"
+              (togglePinRequested)="togglePinRequested.emit($event)"
+              (deleteRequested)="deleteRequested.emit($event)"
+            />
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

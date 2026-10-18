@@ -1,0 +1,15 @@
+<header [class]="headerClass()">
+  <div class="min-w-0">
+    <h1 class="text-balance text-2xl font-semibold tracking-tight md:text-3xl">
+      {{ title() }}
+    </h1>
+    @if (description()) {
+      <p class="mt-1.5 max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground">
+        {{ description() }}
+      </p>
+    }
+  </div>
+  <div class="flex shrink-0 flex-wrap items-center gap-2 empty:hidden">
+    <ng-content />
+  </div>
+</header>

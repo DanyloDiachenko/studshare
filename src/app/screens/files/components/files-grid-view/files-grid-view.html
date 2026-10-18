@@ -1,0 +1,39 @@
+<ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+  @for (entry of entries(); track entry.kind + '-' + entry.id) {
+    @let owner = roleState.getUserById(entry.ownerId);
+    <li
+      class="flex flex-col gap-4 rounded-2xl border bg-card p-4 transition-shadow hover:shadow-sm"
+    >
+      <div class="flex items-start justify-between gap-2">
+        <ui-file-icon
+          size="lg"
+          [kind]="entry.kind === 'folder' ? 'folder' : (entry.type ?? 'pdf')"
+        />
+        <app-file-entry-actions
+          [entry]="entry"
+          (renameRequested)="renameRequested.emit($event)"
+          (togglePinRequested)="togglePinRequested.emit($event)"
+          (deleteRequested)="deleteRequested.emit($event)"
+        />
+      </div>
+      <div class="min-w-0">
+        <app-file-entry-title [entry]="entry" />
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ entry.meta }} · {{ entry.updatedAt }}
+        </p>
+      </div>
+      @if (owner) {
+        <div
+          class="mt-auto flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground"
+        >
+          <ui-avatar
+            [initials]="getInitials(owner)"
+            [tone]="getTone(owner)"
+            size="2xs"
+          />
+          {{ getFullName(owner) }}
+        </div>
+      }
+    </li>
+  }
+</ul>

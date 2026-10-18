@@ -1,0 +1,76 @@
+<button
+  #triggerBtn
+  uiButton
+  variant="ghost"
+  size="icon-sm"
+  type="button"
+  data-slot="dropdown-menu-trigger"
+  aria-haspopup="menu"
+  [attr.data-disabled]="isStudcurator() ? '' : null"
+  [disabled]="isStudcurator()"
+  [attr.aria-expanded]="open()"
+  [attr.aria-label]="'Дії для ' + user().fullName"
+  (click)="toggleMenu()"
+>
+  <ui-icon name="ellipsis-vertical" />
+</button>
+
+@if (isRendered()) {
+  <div
+    role="menu"
+    data-slot="dropdown-menu-content"
+    [attr.data-side]="menuPos().side"
+    [attr.data-state]="animState()"
+    [attr.data-open]="animState() === 'open' ? '' : null"
+    [attr.data-closed]="animState() === 'closed' ? '' : null"
+    [style.top]="menuPos().top ?? null"
+    [style.bottom]="menuPos().bottom ?? null"
+    [style.right]="menuPos().right"
+    [class]="
+      'fixed z-50 w-56 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95 ' +
+      menuPos().originClass
+    "
+  >
+    <button
+      type="button"
+      role="menuitem"
+      data-slot="dropdown-menu-item"
+      class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+      (click)="emitAction('edit')"
+    >
+      <ui-icon name="pencil" svgClass="size-4" />
+      Редагувати дані
+    </button>
+
+    @if (user().role !== 'starosta') {
+      <button
+        type="button"
+        role="menuitem"
+        data-slot="dropdown-menu-item"
+        class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+        (click)="emitAction('starosta')"
+      >
+        <ui-icon name="star" svgClass="size-4" />
+        Призначити старостою
+      </button>
+    }
+
+    <div
+      data-slot="dropdown-menu-separator"
+      role="separator"
+      class="-mx-1 my-1 h-px bg-border"
+    ></div>
+
+    <button
+      type="button"
+      role="menuitem"
+      data-slot="dropdown-menu-item"
+      data-variant="destructive"
+      class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm text-destructive outline-hidden select-none hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
+      (click)="emitAction('remove')"
+    >
+      <ui-icon name="user-minus" svgClass="size-4 text-destructive" />
+      Виключити з групи
+    </button>
+  </div>
+}

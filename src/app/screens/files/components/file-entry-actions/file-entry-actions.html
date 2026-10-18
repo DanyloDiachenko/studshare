@@ -1,0 +1,108 @@
+<div class="relative inline-block text-left">
+  <button
+    #triggerBtn
+    type="button"
+    uiButton
+    variant="ghost"
+    size="icon-sm"
+    data-slot="dropdown-menu-trigger"
+    [attr.aria-label]="'Дії для ' + entry().name"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="isOpen()"
+    (click)="toggleMenu()"
+  >
+    <ui-icon name="ellipsis-vertical" />
+  </button>
+
+  @if (isRendered()) {
+    <div
+      role="menu"
+      data-slot="dropdown-menu-content"
+      [attr.data-side]="menuPos().side"
+      [attr.data-state]="animState()"
+      [attr.data-open]="animState() === 'open' ? '' : null"
+      [attr.data-closed]="animState() === 'closed' ? '' : null"
+      [style.top]="menuPos().top ?? null"
+      [style.bottom]="menuPos().bottom ?? null"
+      [style.right]="menuPos().right"
+      [class]="
+        'fixed z-50 w-52 overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95 ' +
+        menuPos().originClass
+      "
+    >
+      @if (entry().kind === 'file') {
+        <button
+          type="button"
+          role="menuitem"
+          data-slot="dropdown-menu-item"
+          class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          (click)="closeMenu()"
+        >
+          <ui-icon name="download" svgClass="size-4" />
+          Завантажити
+        </button>
+      } @else {
+        <a
+          [routerLink]="['/files', entry().id]"
+          role="menuitem"
+          data-slot="dropdown-menu-item"
+          class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          (click)="closeMenu()"
+        >
+          <ui-icon name="folder-open" svgClass="size-4" />
+          Відкрити
+        </a>
+      }
+
+      @if (canRename()) {
+        <button
+          type="button"
+          role="menuitem"
+          data-slot="dropdown-menu-item"
+          class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          (click)="handleRename()"
+        >
+          <ui-icon name="pencil" svgClass="size-4" />
+          Перейменувати
+        </button>
+      }
+
+      @if (roleState.can().canPin) {
+        <button
+          type="button"
+          role="menuitem"
+          data-slot="dropdown-menu-item"
+          class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+          (click)="handleTogglePin()"
+        >
+          @if (entry().pinned) {
+            <ui-icon name="pin-off" svgClass="size-4" />
+            Відкріпити
+          } @else {
+            <ui-icon name="pin" svgClass="size-4" />
+            Закріпити
+          }
+        </button>
+      }
+
+      @if (canDelete()) {
+        <div
+          data-slot="dropdown-menu-separator"
+          role="separator"
+          class="-mx-1 my-1 h-px bg-border"
+        ></div>
+        <button
+          type="button"
+          role="menuitem"
+          data-slot="dropdown-menu-item"
+          data-variant="destructive"
+          class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-sm text-destructive outline-hidden select-none hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
+          (click)="handleDelete()"
+        >
+          <ui-icon name="trash-2" svgClass="size-4 text-destructive" />
+          Видалити
+        </button>
+      }
+    </div>
+  }
+</div>

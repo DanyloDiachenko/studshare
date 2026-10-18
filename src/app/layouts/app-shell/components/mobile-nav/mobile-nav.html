@@ -1,0 +1,23 @@
+<nav
+  aria-label="Мобільна навігація"
+  class="fixed inset-x-0 bottom-0 z-40 border-t border-sidebar-border bg-sidebar md:hidden"
+>
+  <ul class="grid grid-cols-6">
+    @for (item of navItems; track item.href) {
+      @let active = isItemActive(item.href);
+      <li>
+        <a
+          [routerLink]="item.href"
+          [attr.aria-current]="active ? 'page' : null"
+          [class]="
+            'flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium ' +
+            (active ? 'text-sidebar-primary' : 'text-sidebar-foreground/70')
+          "
+        >
+          <ui-icon [name]="item.icon" svgClass="size-5" />
+          {{ item.label }}
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

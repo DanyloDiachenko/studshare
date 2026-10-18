@@ -1,0 +1,167 @@
+<div
+  class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-background/85 px-4 backdrop-blur md:px-8"
+>
+  <div class="md:hidden">
+    <ui-brand-logo href="/files" />
+  </div>
+
+  <form
+    action="/search"
+    role="search"
+    class="relative ml-auto hidden max-w-md flex-1 sm:block md:ml-0"
+    (submit)="onSearchSubmit($event, searchInput.value)"
+  >
+    <ui-icon
+      name="search"
+      svgClass="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+    />
+    <input
+      #searchInput
+      type="search"
+      name="q"
+      aria-label="Пошук файлів і папок"
+      placeholder="Пошук файлів і папок у групі…"
+      class="h-10 w-full rounded-lg border bg-card pr-3 pl-9 text-sm outline-none transition-shadow placeholder:text-muted-foreground focus-visible:ring-3 focus-visible:ring-ring/30"
+    />
+  </form>
+
+  <div class="ml-auto flex items-center gap-2">
+    <a
+      routerLink="/search"
+      uiButton
+      variant="ghost"
+      size="icon"
+      aria-label="Пошук"
+      class="sm:hidden"
+    >
+      <ui-icon name="search" />
+    </a>
+
+    <div #roleMenuContainer class="relative">
+      <button
+        type="button"
+        uiButton
+        variant="outline"
+        size="sm"
+        data-slot="dropdown-menu-trigger"
+        class="gap-1.5"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="isRoleMenuOpen()"
+        (click)="toggleRoleMenu()"
+      >
+        <ui-icon name="eye" />
+        <span class="hidden sm:inline">Переглянути як:</span>
+        <span class="font-semibold">{{ roleState.userRoleLabel() }}</span>
+      </button>
+
+      @if (isRoleMenuRendered()) {
+        <div
+          role="menu"
+          data-slot="dropdown-menu-content"
+          data-side="bottom"
+          [attr.data-state]="roleMenuAnimState()"
+          [attr.data-open]="roleMenuAnimState() === 'open' ? '' : null"
+          [attr.data-closed]="roleMenuAnimState() === 'closed' ? '' : null"
+          class="absolute right-0 z-50 mt-1 w-64 origin-top-right overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95"
+        >
+          <div
+            data-slot="dropdown-menu-label"
+            class="px-1.5 py-1 text-xs font-medium text-muted-foreground"
+          >
+            Демо-режим ролей
+          </div>
+          <div data-slot="dropdown-menu-radio-group" role="group">
+            @for (preset of roleState.demoPresets(); track preset.userId) {
+              @let selected = roleState.user().id === preset.userId;
+              <button
+                type="button"
+                role="menuitemradio"
+                data-slot="dropdown-menu-radio-item"
+                [attr.aria-checked]="selected"
+                class="relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-left text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                (click)="selectRoleUser(preset.userId)"
+              >
+                <span
+                  class="pointer-events-none absolute right-2 flex items-center justify-center"
+                  data-slot="dropdown-menu-radio-item-indicator"
+                >
+                  @if (selected) {
+                    <ui-icon name="check" svgClass="size-4" />
+                  }
+                </span>
+                {{ preset.label }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div #profileMenuContainer class="relative flex items-center">
+      <button
+        type="button"
+        data-slot="dropdown-menu-trigger"
+        aria-label="Меню профілю"
+        aria-haspopup="menu"
+        [attr.aria-expanded]="isProfileMenuOpen()"
+        class="rounded-full outline-none transition-transform active:scale-95 focus-visible:ring-3 focus-visible:ring-ring/40"
+        (click)="toggleProfileMenu()"
+      >
+        <ui-avatar
+          [initials]="roleState.userInitials()"
+          [tone]="roleState.userAvatarTone()"
+          size="default"
+        />
+      </button>
+
+      @if (isProfileMenuRendered()) {
+        <div
+          role="menu"
+          data-slot="dropdown-menu-content"
+          data-side="bottom"
+          [attr.data-state]="profileMenuAnimState()"
+          [attr.data-open]="profileMenuAnimState() === 'open' ? '' : null"
+          [attr.data-closed]="profileMenuAnimState() === 'closed' ? '' : null"
+          class="absolute top-full right-0 z-50 mt-1.5 w-60 origin-top-right overflow-x-hidden overflow-y-auto rounded-lg bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:overflow-hidden data-closed:fade-out-0 data-closed:zoom-out-95"
+        >
+          <div
+            data-slot="dropdown-menu-label"
+            class="flex flex-col px-1.5 py-1 text-xs font-medium text-muted-foreground"
+          >
+            <span class="text-sm font-medium text-foreground">
+              {{ roleState.userFullName() }}
+            </span>
+            <span class="text-xs font-normal text-muted-foreground">
+              {{ roleState.user().email }}
+            </span>
+          </div>
+          <div
+            data-slot="dropdown-menu-separator"
+            role="separator"
+            class="-mx-1 my-1 h-px bg-border"
+          ></div>
+          <a
+            routerLink="/profile"
+            role="menuitem"
+            data-slot="dropdown-menu-item"
+            class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+            (click)="closeAllMenus()"
+          >
+            <ui-icon name="user-round" svgClass="size-4" />
+            Мій профіль
+          </a>
+          <a
+            routerLink="/login"
+            role="menuitem"
+            data-slot="dropdown-menu-item"
+            class="group/dropdown-menu-item relative flex w-full cursor-default items-center gap-1.5 rounded-md px-1.5 py-1 text-sm outline-hidden select-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+            (click)="closeAllMenus()"
+          >
+            <ui-icon name="log-out" svgClass="size-4" />
+            Вийти
+          </a>
+        </div>
+      }
+    </div>
+  </div>
+</div>

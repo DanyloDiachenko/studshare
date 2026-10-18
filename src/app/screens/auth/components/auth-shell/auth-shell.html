@@ -1,0 +1,13 @@
+<div class="grid min-h-dvh lg:grid-cols-[1fr_1.1fr]">
+  <main class="flex flex-col px-6 py-8 md:px-12">
+    <ui-brand-logo />
+    <div class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-10">
+      <h1 class="text-balance text-3xl font-semibold tracking-tight">{{ title() }}</h1>
+      <p class="mt-2 text-sm leading-relaxed text-muted-foreground">{{ subtitle() }}</p>
+      <div class="mt-8">
+        <ng-content />
+      </div>
+    </div>
+  </main>
+  <app-auth-aside />
+</div>

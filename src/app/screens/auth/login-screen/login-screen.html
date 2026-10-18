@@ -1,0 +1,35 @@
+<app-auth-shell
+  title="З поверненням"
+  subtitle="Увійдіть, щоб відкрити матеріали своєї групи."
+>
+  <form class="space-y-4" (submit)="onSubmit($event)">
+    <div class="grid gap-2">
+      <label uiLabel for="email">Email</label>
+      <input
+        uiInput
+        id="email"
+        type="email"
+        placeholder="name@lpi.edu.ua"
+        autocomplete="email"
+      />
+    </div>
+    <div class="grid gap-2">
+      <div class="flex items-center justify-between">
+        <label uiLabel for="password">Пароль</label>
+        <a class="text-xs text-primary hover:underline" routerLink="/forgot-password">
+          Забули пароль?
+        </a>
+      </div>
+      <input uiInput id="password" type="password" autocomplete="current-password" />
+    </div>
+    <button uiButton type="submit" variant="default" size="md" class="w-full">
+      Увійти
+    </button>
+  </form>
+  <p class="mt-6 text-center text-sm text-muted-foreground">
+    Ще немає акаунту?
+    <a class="font-medium text-primary hover:underline" routerLink="/register">
+      Зареєструватись
+    </a>
+  </p>
+</app-auth-shell>

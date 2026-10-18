@@ -1,0 +1,34 @@
+<div class="space-y-8">
+  @for (group of dayGroups(); track group.day) {
+    <section [attr.aria-labelledby]="'day-' + group.day">
+      <h2
+        [id]="'day-' + group.day"
+        class="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+      >
+        {{ group.day }}
+      </h2>
+      <ol
+        class="relative space-y-5 before:absolute before:top-2 before:bottom-2 before:left-[17px] before:w-px before:bg-border"
+      >
+        @for (event of group.events; track event.id) {
+          <li class="relative flex gap-4">
+            <span
+              [class]="
+                'relative z-10 grid size-9 shrink-0 place-items-center rounded-full ring-4 ring-background ' +
+                event.toneClass
+              "
+            >
+              <ui-icon [name]="event.icon" svgClass="size-4" />
+            </span>
+            <div class="min-w-0 flex-1 rounded-xl border bg-card px-4 py-3">
+              <p class="text-sm leading-relaxed">
+                <span class="font-semibold">{{ event.actor }}</span> {{ event.text }}
+              </p>
+              <p class="mt-1 text-xs text-muted-foreground">{{ event.time }}</p>
+            </div>
+          </li>
+        }
+      </ol>
+    </section>
+  }
+</div>

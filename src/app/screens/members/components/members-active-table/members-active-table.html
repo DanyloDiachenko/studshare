@@ -1,0 +1,64 @@
+<section aria-labelledby="active" class="space-y-3">
+  <h2 id="active" class="sr-only">Активні учасники</h2>
+  <div class="overflow-hidden rounded-2xl border bg-card">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b bg-muted/50 text-left text-xs font-medium text-muted-foreground">
+          <th scope="col" class="px-4 py-2.5">Учасник</th>
+          <th scope="col" class="px-4 py-2.5">Роль</th>
+          <th scope="col" class="hidden px-4 py-2.5 md:table-cell">У групі з</th>
+          <th scope="col" class="px-4 py-2.5">Завантаження</th>
+          <th scope="col" class="w-12 px-2 py-2.5">
+            <span class="sr-only">Дії</span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (member of members(); track member.id) {
+          <tr class="border-b transition-colors last:border-b-0 hover:bg-muted/40">
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-3">
+                <ui-avatar
+                  [initials]="member.initials"
+                  [tone]="member.avatarTone"
+                  size="lg"
+                />
+                <div class="min-w-0">
+                  <p class="truncate font-medium">{{ member.fullName }}</p>
+                  <p class="truncate text-xs text-muted-foreground">{{ member.email }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3">
+              <ui-badge [variant]="member.role">{{ member.roleLabel }}</ui-badge>
+            </td>
+            <td class="hidden px-4 py-3 text-muted-foreground md:table-cell">
+              {{ member.joinedAt }}
+            </td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2">
+                <ui-switch
+                  [checked]="member.canUpload"
+                  [disabled]="!permissions().canToggleUpload || member.role !== 'student'"
+                  [ariaLabel]="'Дозволити завантаження для ' + member.fullName"
+                  (checkedChange)="onUploadToggle(member.id, $event)"
+                />
+                <span class="hidden text-xs text-muted-foreground lg:inline">
+                  {{ member.uploadStatusLabel }}
+                </span>
+              </div>
+            </td>
+            <td class="px-2 py-3 text-right">
+              @if (permissions().canManageMembers) {
+                <app-member-actions-menu
+                  [user]="member"
+                  (actionSelected)="memberAction.emit($event)"
+                />
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>

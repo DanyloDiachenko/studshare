@@ -1,0 +1,56 @@
+@if (isRendered()) {
+  <div
+    data-slot="dialog-overlay"
+    role="presentation"
+    [attr.data-state]="animState()"
+    [attr.data-open]="animState() === 'open' ? '' : null"
+    [attr.data-closed]="animState() === 'closed' ? '' : null"
+    class="fixed inset-0 isolate z-50 bg-black/10 duration-150 supports-backdrop-filter:backdrop-blur-xs data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0"
+    (click)="close()"
+  ></div>
+  <div
+    data-slot="dialog-content"
+    role="dialog"
+    aria-modal="true"
+    [attr.data-state]="animState()"
+    [attr.data-open]="animState() === 'open' ? '' : null"
+    [attr.data-closed]="animState() === 'closed' ? '' : null"
+    [attr.aria-label]="renderedTitle()"
+    [class]="popupClass()"
+  >
+    <div data-slot="dialog-header" class="flex flex-col gap-2">
+      <h2 data-slot="dialog-title" class="text-base leading-none font-medium">
+        {{ renderedTitle() }}
+      </h2>
+      @if (renderedDescription()) {
+        <p data-slot="dialog-description" class="text-sm text-muted-foreground">
+          {{ renderedDescription() }}
+        </p>
+      }
+    </div>
+
+    <ng-content />
+
+    <div
+      data-slot="dialog-footer"
+      class="-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end empty:hidden"
+    >
+      <ng-content select="[dialogFooter]" />
+    </div>
+
+    @if (showCloseButton()) {
+      <button
+        type="button"
+        uiButton
+        variant="ghost"
+        size="icon-sm"
+        data-slot="dialog-close"
+        class="absolute top-2 right-2"
+        (click)="close()"
+      >
+        <ui-icon name="x" />
+        <span class="sr-only">Close</span>
+      </button>
+    }
+  </div>
+}

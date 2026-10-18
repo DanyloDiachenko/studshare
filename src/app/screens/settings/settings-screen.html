@@ -1,0 +1,64 @@
+<div class="mx-auto max-w-3xl space-y-6">
+  <ui-page-header
+    title="Налаштування групи"
+    description="Основні дані групи та правила доступу до матеріалів."
+  />
+
+  @if (!can().canEditGroup) {
+    <p class="flex items-center gap-2 rounded-xl border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+      <ui-icon name="lock" svgClass="size-4" />
+      Налаштування групи змінює студкуратор. Ви можете лише переглядати їх.
+    </p>
+  }
+
+  <app-settings-group-info-card
+    [group]="group()"
+    [canEdit]="can().canEditGroup"
+    (saveGroupInfo)="onSaveGroupInfo($event)"
+  />
+
+  <app-settings-upload-rules-card
+    [settings]="uploadSettings()"
+    [canEdit]="can().canEditGroup"
+    (settingsChange)="onUploadSettingsChange($event)"
+  />
+
+  <app-settings-danger-zone-card
+    [canEdit]="can().canEditGroup"
+    [deleteDialogOpen]="deleteDialogOpen()"
+    (openDeleteDialog)="deleteDialogOpen.set(true)"
+  />
+</div>
+
+<ui-dialog
+  [open]="deleteDialogOpen()"
+  [title]="'Видалити групу ' + group().name + '?'"
+  description="Введіть назву групи для підтвердження. Усі учасники втратять доступ до матеріалів."
+  (openChange)="deleteDialogOpen.set($event)"
+>
+  <input
+    uiInput
+    aria-label="Підтвердження назви групи"
+    [placeholder]="group().name"
+    [ngModel]="deleteConfirmText()"
+    (ngModelChange)="deleteConfirmText.set($event)"
+  />
+  <ng-container dialogFooter>
+    <button
+      uiButton
+      variant="outline"
+      type="button"
+      (click)="closeDeleteDialog()"
+    >
+      Скасувати
+    </button>
+    <button
+      uiButton
+      variant="destructive"
+      type="button"
+      (click)="confirmDeleteGroup()"
+    >
+      Видалити назавжди
+    </button>
+  </ng-container>
+</ui-dialog>

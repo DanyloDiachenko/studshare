@@ -1,0 +1,83 @@
+<aside
+  class="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground md:flex"
+>
+  <div class="px-5 pt-5 pb-4">
+    <ui-brand-logo href="/files" variant="sidebar" />
+  </div>
+
+  <div class="mx-3 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
+    <p class="text-xs uppercase tracking-wider text-sidebar-foreground/60">Група</p>
+    <p class="mt-0.5 text-lg font-semibold text-white">{{ roleState.group().name }}</p>
+    <p class="mt-1 text-xs text-sidebar-foreground/60">
+      {{ roleState.group().membersLabel }}
+    </p>
+  </div>
+
+  <nav aria-label="Основна навігація" class="mt-5 flex-1 px-3">
+    <ul class="flex flex-col gap-0.5">
+      @for (item of navItems; track item.href) {
+        @let active = isItemActive(item.href);
+        <li>
+          <a
+            [routerLink]="item.href"
+            [attr.aria-current]="active ? 'page' : null"
+            [class]="
+              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' +
+              (active
+                ? 'bg-sidebar-accent text-white'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-white')
+            "
+          >
+            <ui-icon
+              [name]="item.icon"
+              [svgClass]="active ? 'size-4 text-sidebar-primary' : 'size-4'"
+            />
+            {{ item.label }}
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+
+  <div class="m-3 rounded-xl border border-sidebar-border p-3">
+    <div class="flex items-center justify-between text-xs text-sidebar-foreground/70">
+      <span>Сховище групи</span>
+      <span
+        class="rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
+      >
+        Ліміти TBD
+      </span>
+    </div>
+    <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-sidebar-accent">
+      <div
+        class="h-full rounded-full bg-sidebar-primary"
+        [style.width.%]="roleState.group().storagePercent"
+      ></div>
+    </div>
+    <p class="mt-2 text-xs text-sidebar-foreground/60">
+      {{ roleState.group().storageUsedLabel }}
+    </p>
+  </div>
+
+  <a
+    routerLink="/profile"
+    class="mx-3 mb-4 flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-sidebar-accent/60"
+  >
+    <ui-avatar
+      [initials]="roleState.userInitials()"
+      [tone]="roleState.userAvatarTone()"
+      size="default"
+    />
+    <div class="min-w-0">
+      <p class="truncate text-sm font-medium text-white">
+        {{ roleState.userFullName() }}
+      </p>
+      <ui-badge
+        [variant]="roleState.user().role"
+        customClass="mt-0.5 px-1.5 py-0 text-[10px]"
+      >
+        {{ roleState.userRoleLabel() }}
+      </ui-badge>
+    </div>
+  </a>
+</aside>

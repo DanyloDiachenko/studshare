@@ -1,0 +1,27 @@
+@if (entry().kind === 'folder') {
+  <a [routerLink]="['/files', entry().id]" class="min-w-0 hover:text-primary">
+    <span class="flex min-w-0 items-center gap-2">
+      <span [class]="textClass()">{{ entry().name }}</span>
+      @if (entry().pinned) {
+        <ui-icon
+          name="pin"
+          ariaLabel="Закріплено старостою"
+          svgClass="size-3.5 shrink-0 fill-pin text-pin-foreground"
+        />
+      }
+    </span>
+  </a>
+} @else {
+  <span class="min-w-0">
+    <span class="flex min-w-0 items-center gap-2">
+      <span [class]="textClass()">{{ entry().name }}</span>
+      @if (entry().pinned) {
+        <ui-icon
+          name="pin"
+          ariaLabel="Закріплено старостою"
+          svgClass="size-3.5 shrink-0 fill-pin text-pin-foreground"
+        />
+      }
+    </span>
+  </span>
+}

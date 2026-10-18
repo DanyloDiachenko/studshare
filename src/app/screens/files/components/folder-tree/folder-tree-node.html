@@ -1,0 +1,53 @@
+<li>
+  <div
+    [class]="
+      'group flex items-center gap-1 rounded-lg pr-2 text-sm transition-colors ' +
+      (isActive()
+        ? 'bg-accent font-medium text-accent-foreground'
+        : 'hover:bg-muted')
+    "
+    [style.paddingLeft.px]="12 * depth() + 4"
+  >
+    <button
+      type="button"
+      [attr.aria-label]="
+        isExpanded() ? 'Згорнути ' + folder().name : 'Розгорнути ' + folder().name
+      "
+      [attr.aria-expanded]="children().length ? isExpanded() : null"
+      [disabled]="!children().length"
+      class="grid size-6 shrink-0 place-items-center rounded text-muted-foreground disabled:opacity-0"
+      (click)="toggleExpand()"
+    >
+      <ui-icon
+        name="chevron-right"
+        [svgClass]="
+          'size-3.5 transition-transform' + (isExpanded() ? ' rotate-90' : '')
+        "
+      />
+    </button>
+
+    <a
+      [routerLink]="['/files', folder().id]"
+      class="flex min-w-0 flex-1 items-center gap-2 py-1.5"
+    >
+      <ui-icon
+        [name]="isExpanded() && children().length ? 'folder-open' : 'folder'"
+        svgClass="size-4 shrink-0 text-primary"
+      />
+      <span class="truncate">{{ folder().name }}</span>
+    </a>
+  </div>
+
+  @if (isExpanded() && children().length) {
+    <ul>
+      @for (child of children(); track child.id) {
+        <app-folder-tree-node
+          [folder]="child"
+          [depth]="depth() + 1"
+          [activeId]="activeId()"
+          [ancestorIds]="ancestorIds()"
+        />
+      }
+    </ul>
+  }
+</li>

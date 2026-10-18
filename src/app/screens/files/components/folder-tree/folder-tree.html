@@ -1,0 +1,29 @@
+<nav aria-label="Дерево папок" class="rounded-2xl border bg-card p-3">
+  <p
+    class="px-2 pt-1 pb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground"
+  >
+    Структура
+  </p>
+  <a
+    routerLink="/files"
+    [class]="
+      'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors ' +
+      (filesState.activeFolderId() === null
+        ? 'bg-accent font-medium text-accent-foreground'
+        : 'hover:bg-muted')
+    "
+  >
+    <ui-icon name="house" svgClass="size-4 text-primary" />
+    {{ roleState.group().name }}
+  </a>
+  <ul class="mt-0.5">
+    @for (folder of filesState.rootFolders(); track folder.id) {
+      <app-folder-tree-node
+        [folder]="folder"
+        [depth]="0"
+        [activeId]="filesState.activeFolderId()"
+        [ancestorIds]="ancestorIdSet()"
+      />
+    }
+  </ul>
+</nav>

@@ -1,0 +1,43 @@
+<app-auth-shell
+  title="Створіть акаунт"
+  subtitle="Після реєстрації студкуратор додасть вас до групи за email або запрошенням."
+>
+  <form class="space-y-4" (submit)="onSubmit($event)">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="grid gap-2">
+        <label uiLabel for="first">Ім'я</label>
+        <input uiInput id="first" autocomplete="given-name" />
+      </div>
+      <div class="grid gap-2">
+        <label uiLabel for="last">Прізвище</label>
+        <input uiInput id="last" autocomplete="family-name" />
+      </div>
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="middle">По батькові</label>
+      <input uiInput id="middle" autocomplete="additional-name" />
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="email">Email</label>
+      <input
+        uiInput
+        id="email"
+        type="email"
+        placeholder="name@lpi.edu.ua"
+        autocomplete="email"
+      />
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="password">Пароль</label>
+      <input uiInput id="password" type="password" autocomplete="new-password" />
+      <p class="text-xs text-muted-foreground">Щонайменше 8 символів.</p>
+    </div>
+    <button uiButton type="submit" variant="default" size="md" class="w-full">
+      Зареєструватись
+    </button>
+  </form>
+  <p class="mt-6 text-center text-sm text-muted-foreground">
+    Вже маєте акаунт?
+    <a class="font-medium text-primary hover:underline" routerLink="/login">Увійти</a>
+  </p>
+</app-auth-shell>

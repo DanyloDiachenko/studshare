@@ -1,0 +1,52 @@
+<section aria-live="polite" class="space-y-3">
+  <h2 class="text-sm font-semibold text-muted-foreground">
+    Знайдено: {{ results().totalCount }} за «{{ results().query }}»
+  </h2>
+  <ul class="divide-y overflow-hidden rounded-2xl border bg-card">
+    @for (folder of results().folders; track folder.id) {
+      <li>
+        <a
+          [routerLink]="['/files', folder.id]"
+          class="flex items-center gap-4 p-4 transition-colors hover:bg-muted/40"
+        >
+          <ui-file-icon kind="folder" size="lg" />
+          <div class="min-w-0">
+            <p class="truncate font-medium">{{ folder.name }}</p>
+            <p class="truncate text-xs text-muted-foreground">
+              {{ folder.pathLabel }}
+            </p>
+          </div>
+        </a>
+      </li>
+    }
+    @for (file of results().files; track file.id) {
+      @let owner = roleState.getUserById(file.ownerId);
+      <li>
+        <a
+          [routerLink]="file.folderId ? ['/files', file.folderId] : ['/files']"
+          class="flex items-center gap-4 p-4 transition-colors hover:bg-muted/40"
+        >
+          <ui-file-icon [kind]="file.type" size="lg" />
+          <div class="min-w-0 flex-1">
+            <p class="truncate font-medium">{{ file.name }}</p>
+            <p class="truncate text-xs text-muted-foreground">
+              {{ file.pathLabel }} · {{ file.sizeLabel }}
+            </p>
+          </div>
+          @if (owner) {
+            <span
+              class="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"
+            >
+              <ui-avatar
+                [initials]="getInitials(owner)"
+                [tone]="getTone(owner)"
+                size="sm"
+              />
+              {{ getFullName(owner) }}
+            </span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+</section>

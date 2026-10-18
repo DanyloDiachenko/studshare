@@ -1,0 +1,161 @@
+<ui-dialog
+  [open]="filesState.isCreateFolderDialogOpen()"
+  title="Нова папка"
+  [description]="'Буде створена в: ' + filesState.parentDisplayName()"
+  (openChange)="!$event && filesState.closeCreateFolderDialog()"
+>
+  <div class="grid gap-2">
+    <label uiLabel for="folder-name">Назва папки</label>
+    <input
+      #folderNameInput
+      uiInput
+      id="folder-name"
+      placeholder="Наприклад, Лабораторні роботи"
+      [value]="newFolderName()"
+      (input)="newFolderName.set(folderNameInput.value)"
+      (keydown.enter)="submitCreateFolder()"
+    />
+  </div>
+
+  <ng-container dialogFooter>
+    <button
+      type="button"
+      uiButton
+      variant="outline"
+      (click)="filesState.closeCreateFolderDialog()"
+    >
+      Скасувати
+    </button>
+    <button type="button" uiButton (click)="submitCreateFolder()">
+      Створити
+    </button>
+  </ng-container>
+</ui-dialog>
+
+@if (roleState.can().canUpload) {
+  <ui-dialog
+    [open]="filesState.isUploadFileDialogOpen()"
+    title="Завантажити файл"
+    [description]="'Файл буде додано в: ' + filesState.parentDisplayName()"
+    maxWidthClass="sm:max-w-lg"
+    (openChange)="!$event && filesState.closeUploadFileDialog()"
+  >
+    <label
+      for="file-input"
+      class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed bg-muted/40 px-6 py-10 text-center transition-colors hover:border-primary/50 hover:bg-accent/50"
+    >
+      <span
+        class="grid size-12 place-items-center rounded-full bg-accent text-primary"
+      >
+        <ui-icon name="cloud-upload" svgClass="size-6" />
+      </span>
+      <span class="text-sm font-medium">
+        {{ selectedFileName() || 'Перетягніть файл сюди або натисніть для вибору' }}
+      </span>
+      <span class="text-xs text-muted-foreground">
+        PDF, DOCX, PPTX, PNG, JPG, MP4 · ліміт розміру визначається налаштуваннями групи
+      </span>
+      <input
+        #fileInput
+        id="file-input"
+        type="file"
+        class="sr-only"
+        (change)="onFileSelected(fileInput)"
+      />
+    </label>
+
+    <ng-container dialogFooter>
+      <button
+        type="button"
+        uiButton
+        variant="outline"
+        (click)="filesState.closeUploadFileDialog()"
+      >
+        Скасувати
+      </button>
+      <button type="button" uiButton (click)="submitUploadFile()">
+        Завантажити
+      </button>
+    </ng-container>
+  </ui-dialog>
+} @else {
+  <ui-dialog
+    [open]="filesState.isUploadFileDialogOpen()"
+    title="Завантаження недоступне"
+    description="Староста або студкуратор вимкнув для вас право завантажувати файли. Ви можете переглядати та завантажувати матеріали групи."
+    (openChange)="!$event && filesState.closeUploadFileDialog()"
+  >
+    <ng-container dialogFooter>
+      <button
+        type="button"
+        uiButton
+        (click)="filesState.closeUploadFileDialog()"
+      >
+        Зрозуміло
+      </button>
+    </ng-container>
+  </ui-dialog>
+}
+
+<ui-dialog
+  [open]="filesState.renameTarget() !== null"
+  title="Перейменувати"
+  description="Нова назва одразу з'явиться в історії змін групи."
+  (openChange)="!$event && filesState.closeRenameDialog()"
+>
+  <div class="grid gap-2">
+    <label uiLabel for="rename-input">Назва</label>
+    <input
+      #renameInput
+      uiInput
+      id="rename-input"
+      [value]="renameValue()"
+      (input)="renameValue.set(renameInput.value)"
+      (keydown.enter)="submitRename()"
+    />
+  </div>
+
+  <ng-container dialogFooter>
+    <button
+      type="button"
+      uiButton
+      variant="outline"
+      (click)="filesState.closeRenameDialog()"
+    >
+      Скасувати
+    </button>
+    <button type="button" uiButton (click)="submitRename()">
+      Зберегти
+    </button>
+  </ng-container>
+</ui-dialog>
+
+<ui-dialog
+  [open]="filesState.deleteTarget() !== null"
+  [title]="'Видалити «' + (filesState.deleteTarget()?.name ?? '') + '»?'"
+  [description]="
+    filesState.deleteTarget()?.kind === 'folder'
+      ? 'Папка разом з усім вмістом буде видалена для всіх учасників групи. Дію не можна скасувати.'
+      : 'Файл буде видалено для всіх учасників групи. Дію не можна скасувати.'
+  "
+  (openChange)="!$event && filesState.closeDeleteDialog()"
+>
+  <ng-container dialogFooter>
+    <button
+      type="button"
+      uiButton
+      variant="outline"
+      (click)="filesState.closeDeleteDialog()"
+    >
+      Скасувати
+    </button>
+    <button
+      type="button"
+      uiButton
+      variant="destructive"
+      (click)="filesState.confirmDelete()"
+    >
+      Видалити
+    </button>
+  </ng-container>
+</ui-dialog>

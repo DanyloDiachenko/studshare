@@ -1,0 +1,24 @@
+<div class="mx-auto max-w-3xl space-y-6">
+  <ui-page-header
+    title="Мій профіль"
+    description="Особисті дані та безпека акаунту."
+  />
+
+  <app-profile-summary-card
+    [user]="user()"
+    [userFullName]="userFullName()"
+    [userInitials]="userInitials()"
+    [userAvatarTone]="userAvatarTone()"
+    [userRoleLabel]="userRoleLabel()"
+    [groupName]="group().name"
+  />
+
+  <app-profile-personal-data-card
+    [user]="user()"
+    (savePersonalData)="onSavePersonalData($event)"
+  />
+
+  <app-profile-password-card
+    (changePassword)="onChangePassword($event)"
+  />
+</div>

@@ -1,0 +1,23 @@
+<div aria-hidden="true" class="relative">
+  <div class="absolute -inset-4 -z-10 rounded-[2rem] bg-accent/70"></div>
+  <div class="overflow-hidden rounded-2xl border bg-card shadow-xl">
+    <div class="flex items-center gap-1.5 border-b bg-muted/60 px-4 py-3">
+      <span class="size-2.5 rounded-full bg-border"></span>
+      <span class="size-2.5 rounded-full bg-border"></span>
+      <span class="size-2.5 rounded-full bg-border"></span>
+      <span class="ml-3 text-xs text-muted-foreground">StudShare / ІП-44 / Бази даних</span>
+    </div>
+    <ul class="divide-y">
+      @for (item of previewItems; track item.title) {
+        <li class="flex items-center gap-3 px-4 py-3">
+          <ui-file-icon [kind]="item.kind" />
+          <span class="flex-1 truncate text-sm font-medium">{{ item.title }}</span>
+          @if (item.pinned) {
+            <ui-icon name="pin" svgClass="size-3.5 fill-pin text-pin-foreground" />
+          }
+          <span class="text-xs text-muted-foreground">{{ item.meta }}</span>
+        </li>
+      }
+    </ul>
+  </div>
+</div>

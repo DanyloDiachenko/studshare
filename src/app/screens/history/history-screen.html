@@ -1,0 +1,14 @@
+<div class="mx-auto max-w-3xl space-y-8">
+  <ui-page-header
+    title="Історія змін"
+    description="Хто, що і коли змінив у групі. Записи неможливо відредагувати чи видалити."
+  />
+
+  <app-history-filter-bar
+    [options]="filterOptions"
+    [activeFilter]="activeFilter()"
+    (filterChange)="onFilterChange($event)"
+  />
+
+  <app-history-timeline [dayGroups]="dayGroups()" />
+</div>

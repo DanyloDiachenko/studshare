@@ -1,0 +1,36 @@
+<section class="rounded-2xl border bg-card">
+  <div class="border-b p-5">
+    <h2 class="font-semibold">Про групу</h2>
+    <p class="mt-1 text-sm text-muted-foreground">Ці дані бачать усі учасники.</p>
+  </div>
+  <div class="space-y-5 p-5">
+    <div class="grid gap-2">
+      <label uiLabel for="g-name">Назва групи</label>
+      <input
+        uiInput
+        id="g-name"
+        [disabled]="!canEdit()"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+      />
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="g-fac">Факультет</label>
+      <input
+        uiInput
+        id="g-fac"
+        [disabled]="!canEdit()"
+        [ngModel]="faculty()"
+        (ngModelChange)="faculty.set($event)"
+      />
+    </div>
+    <button
+      uiButton
+      type="button"
+      [disabled]="!canEdit()"
+      (click)="onSave()"
+    >
+      Зберегти зміни
+    </button>
+  </div>
+</section>

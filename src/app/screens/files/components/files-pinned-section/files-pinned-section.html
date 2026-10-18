@@ -1,0 +1,29 @@
+<section aria-labelledby="pinned-heading" class="space-y-3">
+  <h2
+    id="pinned-heading"
+    class="flex items-center gap-2 text-sm font-semibold text-muted-foreground"
+  >
+    <ui-icon
+      name="pin"
+      svgClass="size-4 fill-pin text-pin-foreground"
+    />
+    Закріплено старостою
+  </h2>
+  <ul class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    @for (entry of entries(); track entry.kind + '-' + entry.id) {
+      <li
+        class="flex items-center gap-3 rounded-xl border border-pin/40 bg-pin/10 p-3"
+      >
+        <ui-file-icon
+          [kind]="entry.kind === 'folder' ? 'folder' : (entry.type ?? 'pdf')"
+        />
+        <div class="min-w-0">
+          <app-file-entry-title [entry]="entry" customClass="text-sm" />
+          <p class="text-xs text-muted-foreground">
+            {{ entry.meta }} · {{ entry.updatedAt }}
+          </p>
+        </div>
+      </li>
+    }
+  </ul>
+</section>

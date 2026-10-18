@@ -1,0 +1,18 @@
+<section aria-labelledby="sg" class="space-y-3">
+  <h2 id="sg" class="text-sm font-semibold text-muted-foreground">
+    Спробуйте
+  </h2>
+  <ul class="flex flex-wrap gap-2">
+    @for (item of suggestions(); track item) {
+      <li>
+        <a
+          routerLink="/search"
+          [queryParams]="{ q: item }"
+          class="inline-flex rounded-full border bg-card px-4 py-1.5 text-sm transition-colors hover:border-primary/40 hover:bg-accent"
+        >
+          {{ item }}
+        </a>
+      </li>
+    }
+  </ul>
+</section>
