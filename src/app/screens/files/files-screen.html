@@ -1,133 +1,145 @@
-<div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
-  <div class="hidden lg:block">
-    <div class="sticky top-24">
-      <app-folder-tree />
-    </div>
-  </div>
-
-  <div class="min-w-0 space-y-6">
-    <nav
-      aria-label="Шлях"
-      class="flex flex-wrap items-center gap-1 text-sm text-muted-foreground"
-    >
-      <a routerLink="/files" class="font-medium hover:text-foreground">
-        {{ roleState.group().name }}
-      </a>
-      @for (
-        crumb of filesState.breadcrumbs();
-        track crumb.id;
-        let last = $last
-      ) {
-        <span class="flex items-center gap-1">
-          <ui-icon name="chevron-right" svgClass="size-3.5" />
-          @if (last) {
-            <span aria-current="page" class="font-medium text-foreground">
-              {{ crumb.name }}
-            </span>
-          } @else {
-            <a
-              [routerLink]="['/files', crumb.id]"
-              class="hover:text-foreground"
-            >
-              {{ crumb.name }}
-            </a>
-          }
-        </span>
-      }
-    </nav>
-
-    <ui-page-header
-      [title]="filesState.pageTitle()"
-      [description]="filesState.pageDescription()"
-    >
-      <button
-        type="button"
-        uiButton
-        variant="outline"
-        aria-haspopup="dialog"
-        [attr.aria-expanded]="filesState.isCreateFolderDialogOpen()"
-        (click)="filesState.openCreateFolderDialog()"
-      >
-        <ui-icon name="folder-plus" />
-        Нова папка
-      </button>
-
-      @if (roleState.can().canUpload) {
+@if (!roleState.hasGroup()) {
+  <div class="mx-auto max-w-xl py-12">
+    <div class="rounded-2xl border bg-card p-8 text-center shadow-xs">
+      <div class="mx-auto grid size-12 place-items-center rounded-xl bg-accent text-primary">
+        <ui-icon name="users" svgClass="size-6" />
+      </div>
+      <h1 class="mt-4 text-xl font-semibold">Ви ще не перебуваєте в групі</h1>
+      <p class="mt-2 text-sm text-muted-foreground">
+        Дочекайтеся запрошення від студкуратора вашої групи або створіть нову групу самостійно — при створенні ви автоматично отримаєте роль студкуратора.
+      </p>
+      <div class="mt-6 flex justify-center">
         <button
           type="button"
           uiButton
-          aria-haspopup="dialog"
-          [attr.aria-expanded]="filesState.isUploadFileDialogOpen()"
-          (click)="filesState.openUploadFileDialog()"
+          size="md"
+          (click)="roleState.openCreateGroupDialog()"
         >
-          <ui-icon name="upload" />
-          Завантажити файл
+          <ui-icon name="plus" />
+          Створити групу
         </button>
-      } @else {
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)]">
+    <div class="hidden lg:block">
+      <div class="sticky top-24">
+        <app-folder-tree />
+      </div>
+    </div>
+
+    <div class="min-w-0 space-y-6">
+      <nav
+        aria-label="Шлях"
+        class="flex flex-wrap items-center gap-1 text-sm text-muted-foreground"
+      >
+        <a routerLink="/files" class="font-medium hover:text-foreground">
+          {{ roleState.group().name }}
+        </a>
+        @for (
+          crumb of filesState.breadcrumbs();
+          track crumb.id;
+          let last = $last
+        ) {
+          <span class="flex items-center gap-1">
+            <ui-icon name="chevron-right" svgClass="size-3.5" />
+            @if (last) {
+              <span aria-current="page" class="font-medium text-foreground">
+                {{ crumb.name }}
+              </span>
+            } @else {
+              <a
+                [routerLink]="['/files', crumb.id]"
+                class="hover:text-foreground"
+              >
+                {{ crumb.name }}
+              </a>
+            }
+          </span>
+        }
+      </nav>
+
+      <ui-page-header
+        [title]="filesState.pageTitle()"
+        [description]="filesState.pageDescription()"
+      >
         <button
           type="button"
           uiButton
           variant="outline"
-          class="text-muted-foreground"
           aria-haspopup="dialog"
-          [attr.aria-expanded]="filesState.isUploadFileDialogOpen()"
-          (click)="filesState.openUploadFileDialog()"
+          [attr.aria-expanded]="filesState.isCreateFolderDialogOpen()"
+          (click)="filesState.openCreateFolderDialog()"
         >
-          <ui-icon name="lock" />
-          Завантаження заблоковано
+          <ui-icon name="folder-plus" />
+          Нова папка
         </button>
-      }
-    </ui-page-header>
 
-    @if (filesState.pinnedRootEntries().length > 0) {
-      <app-files-pinned-section [entries]="filesState.pinnedRootEntries()" />
-    }
-
-    <div class="flex items-center justify-between gap-3">
-      <h2 class="text-sm font-semibold text-muted-foreground">Вміст</h2>
-      <div
-        class="inline-flex rounded-lg border bg-card p-0.5"
-        role="group"
-        aria-label="Вигляд"
-      >
-        @for (option of viewOptions; track option.id) {
-          @let active = filesState.viewMode() === option.id;
+        @if (roleState.can().canUpload) {
           <button
             type="button"
-            [attr.aria-pressed]="active"
-            [attr.aria-label]="option.label"
-            [class]="
-              'grid size-8 place-items-center rounded-md transition-colors ' +
-              (active
-                ? 'bg-accent text-accent-foreground'
-                : 'text-muted-foreground')
-            "
-            (click)="filesState.setViewMode(option.id)"
+            uiButton
+            aria-haspopup="dialog"
+            [attr.aria-expanded]="filesState.isUploadFileDialogOpen()"
+            (click)="filesState.openUploadFileDialog()"
           >
-            <ui-icon [name]="option.icon" svgClass="size-4" />
+            <ui-icon name="upload" />
+            Завантажити файл
           </button>
         }
+      </ui-page-header>
+
+      @if (filesState.pinnedRootEntries().length > 0) {
+        <app-files-pinned-section [entries]="filesState.pinnedRootEntries()" />
+      }
+
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-sm font-semibold text-muted-foreground">Вміст</h2>
+        <div
+          class="inline-flex rounded-lg border bg-card p-0.5"
+          role="group"
+          aria-label="Вигляд"
+        >
+          @for (option of viewOptions; track option.id) {
+            @let active = filesState.viewMode() === option.id;
+            <button
+              type="button"
+              [attr.aria-pressed]="active"
+              [attr.aria-label]="option.label"
+              [class]="
+                'grid size-8 place-items-center rounded-md transition-colors ' +
+                (active
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-muted-foreground')
+              "
+              (click)="filesState.setViewMode(option.id)"
+            >
+              <ui-icon [name]="option.icon" svgClass="size-4" />
+            </button>
+          }
+        </div>
       </div>
+
+      @if (filesState.currentEntries().length === 0) {
+        <app-files-empty-state />
+      } @else if (filesState.viewMode() === 'list') {
+        <app-files-list-view
+          [entries]="filesState.currentEntries()"
+          (renameRequested)="filesState.openRenameDialog($event)"
+          (togglePinRequested)="filesState.togglePin($event)"
+          (deleteRequested)="filesState.openDeleteDialog($event)"
+        />
+      } @else {
+        <app-files-grid-view
+          [entries]="filesState.currentEntries()"
+          (renameRequested)="filesState.openRenameDialog($event)"
+          (togglePinRequested)="filesState.togglePin($event)"
+          (deleteRequested)="filesState.openDeleteDialog($event)"
+        />
+      }
     </div>
-
-    @if (filesState.currentEntries().length === 0) {
-      <app-files-empty-state />
-    } @else if (filesState.viewMode() === 'list') {
-      <app-files-list-view
-        [entries]="filesState.currentEntries()"
-        (renameRequested)="filesState.openRenameDialog($event)"
-        (togglePinRequested)="filesState.togglePin($event)"
-        (deleteRequested)="filesState.openDeleteDialog($event)"
-      />
-    } @else {
-      <app-files-grid-view
-        [entries]="filesState.currentEntries()"
-        (renameRequested)="filesState.openRenameDialog($event)"
-        (togglePinRequested)="filesState.togglePin($event)"
-        (deleteRequested)="filesState.openDeleteDialog($event)"
-      />
-    }
   </div>
-</div>
 
-<app-files-dialogs />
+  <app-files-dialogs />
+}

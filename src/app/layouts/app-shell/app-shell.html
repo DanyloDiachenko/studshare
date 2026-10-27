@@ -8,3 +8,59 @@
   </div>
   <app-mobile-nav />
 </div>
+
+<ui-dialog
+  [open]="roleState.isCreateGroupDialogOpen()"
+  title="Створити групу"
+  description="Після створення групи ви автоматично станете її студкуратором та зможете запрошувати учасників і призначити старосту."
+  (openChange)="!$event && roleState.closeCreateGroupDialog()"
+>
+  <div class="space-y-4">
+    @if (createGroupError()) {
+      <p class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        {{ createGroupError() }}
+      </p>
+    }
+    <div class="grid gap-2">
+      <label uiLabel for="create-group-name">Назва групи</label>
+      <input
+        uiInput
+        id="create-group-name"
+        placeholder="Наприклад, ІП-44"
+        [ngModel]="groupName()"
+        (ngModelChange)="groupName.set($event)"
+        (keydown.enter)="submitCreateGroup()"
+      />
+    </div>
+    <div class="grid gap-2">
+      <label uiLabel for="create-group-faculty">Факультет / інститут</label>
+      <input
+        uiInput
+        id="create-group-faculty"
+        placeholder="Факультет інформатики та обчислювальної техніки"
+        [ngModel]="groupFaculty()"
+        (ngModelChange)="groupFaculty.set($event)"
+        (keydown.enter)="submitCreateGroup()"
+      />
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button
+      type="button"
+      uiButton
+      variant="outline"
+      (click)="roleState.closeCreateGroupDialog()"
+    >
+      Скасувати
+    </button>
+    <button
+      type="button"
+      uiButton
+      [disabled]="isCreatingGroup()"
+      (click)="submitCreateGroup()"
+    >
+      Створити групу
+    </button>
+  </ng-container>
+</ui-dialog>

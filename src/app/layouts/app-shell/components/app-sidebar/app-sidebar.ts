@@ -6,6 +6,7 @@ import {
   UiAvatarComponent,
   UiBadgeComponent,
   UiBrandLogoComponent,
+  UiButtonDirective,
   UiIconComponent,
 } from '@ui';
 import { filter } from 'rxjs';
@@ -16,6 +17,7 @@ import { APP_NAV_ITEMS } from '../../navigation.config';
   imports: [
     RouterLink,
     UiBrandLogoComponent,
+    UiButtonDirective,
     UiIconComponent,
     UiAvatarComponent,
     UiBadgeComponent,

@@ -78,23 +78,6 @@
       </button>
     </ng-container>
   </ui-dialog>
-} @else {
-  <ui-dialog
-    [open]="filesState.isUploadFileDialogOpen()"
-    title="Завантаження недоступне"
-    description="Староста або студкуратор вимкнув для вас право завантажувати файли. Ви можете переглядати та завантажувати матеріали групи."
-    (openChange)="!$event && filesState.closeUploadFileDialog()"
-  >
-    <ng-container dialogFooter>
-      <button
-        type="button"
-        uiButton
-        (click)="filesState.closeUploadFileDialog()"
-      >
-        Зрозуміло
-      </button>
-    </ng-container>
-  </ui-dialog>
 }
 
 <ui-dialog

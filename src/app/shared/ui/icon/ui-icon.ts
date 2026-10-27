@@ -47,7 +47,8 @@ export type UiIconName =
   | 'file-plus-corner'
   | 'file-pen'
   | 'file-x-corner'
-  | 'sparkles';
+  | 'sparkles'
+  | 'plus';
 
 @Component({
   selector: 'ui-icon',

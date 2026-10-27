@@ -3,14 +3,22 @@
   subtitle="Увійдіть, щоб відкрити матеріали своєї групи."
 >
   <form class="space-y-4" (submit)="onSubmit($event)">
+    @if (errorMessage()) {
+      <p class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        {{ errorMessage() }}
+      </p>
+    }
     <div class="grid gap-2">
       <label uiLabel for="email">Email</label>
       <input
         uiInput
         id="email"
+        name="email"
         type="email"
         placeholder="name@lpi.edu.ua"
         autocomplete="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
       />
     </div>
     <div class="grid gap-2">
@@ -20,9 +28,24 @@
           Забули пароль?
         </a>
       </div>
-      <input uiInput id="password" type="password" autocomplete="current-password" />
+      <input
+        uiInput
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+      />
     </div>
-    <button uiButton type="submit" variant="default" size="md" class="w-full">
+    <button
+      uiButton
+      type="submit"
+      variant="default"
+      size="md"
+      class="w-full"
+      [disabled]="isSubmitting()"
+    >
       Увійти
     </button>
   </form>

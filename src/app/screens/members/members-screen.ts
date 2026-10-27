@@ -24,7 +24,7 @@ import { MembersPendingListComponent } from './components/members-pending-list/m
   templateUrl: './members-screen.html',
 })
 export class MembersScreenComponent {
-  private readonly roleState = inject(RoleStateService);
+  protected readonly roleState = inject(RoleStateService);
 
   protected readonly group = this.roleState.group;
   protected readonly members = this.roleState.memberRows;

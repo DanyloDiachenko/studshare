@@ -8,6 +8,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { FilesStateService } from '@core/state/files-state.service';
 import { RoleStateService } from '@core/state/role-state.service';
 import {
   UiAvatarComponent,
@@ -35,71 +36,47 @@ import {
 })
 export class AppTopbarComponent {
   protected readonly roleState = inject(RoleStateService);
+  private readonly filesState = inject(FilesStateService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  private readonly roleMenuContainer =
-    viewChild<ElementRef<HTMLElement>>('roleMenuContainer');
   private readonly profileMenuContainer =
     viewChild<ElementRef<HTMLElement>>('profileMenuContainer');
-
-  protected readonly isRoleMenuOpen = signal(false);
-  protected readonly isRoleMenuRendered = signal(false);
-  protected readonly roleMenuAnimState = signal<'open' | 'closed'>('closed');
 
   protected readonly isProfileMenuOpen = signal(false);
   protected readonly isProfileMenuRendered = signal(false);
   protected readonly profileMenuAnimState = signal<'open' | 'closed'>('closed');
 
-  private roleCloseTimer: ReturnType<typeof setTimeout> | null = null;
   private profileCloseTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
     this.destroyRef.onDestroy(() => {
-      this.clearRoleTimer();
       this.clearProfileTimer();
     });
-  }
-
-  protected toggleRoleMenu(): void {
-    if (this.isRoleMenuOpen()) {
-      this.closeRoleMenu();
-    } else {
-      this.closeProfileMenu();
-      this.openRoleMenu();
-    }
   }
 
   protected toggleProfileMenu(): void {
     if (this.isProfileMenuOpen()) {
       this.closeProfileMenu();
     } else {
-      this.closeRoleMenu();
       this.openProfileMenu();
     }
   }
 
-  protected selectRoleUser(userId: string): void {
-    this.roleState.setUserId(userId);
-    this.closeRoleMenu();
+  protected closeAllMenus(): void {
+    this.closeProfileMenu();
   }
 
-  protected closeAllMenus(): void {
-    this.closeRoleMenu();
-    this.closeProfileMenu();
+  protected handleLogout(): void {
+    this.closeAllMenus();
+    this.roleState.logout();
+    this.filesState.clear();
   }
 
   protected onDocumentClick(event: MouseEvent): void {
     const target = event.target as Node | null;
     if (!target) {
       return;
-    }
-
-    if (
-      this.isRoleMenuOpen() &&
-      !this.roleMenuContainer()?.nativeElement.contains(target)
-    ) {
-      this.closeRoleMenu();
     }
 
     if (
@@ -116,26 +93,6 @@ export class AppTopbarComponent {
     void this.router.navigate(['/search'], {
       queryParams: trimmed ? { q: trimmed } : {},
     });
-  }
-
-  private openRoleMenu(): void {
-    this.clearRoleTimer();
-    this.isRoleMenuOpen.set(true);
-    this.isRoleMenuRendered.set(true);
-    this.roleMenuAnimState.set('open');
-  }
-
-  private closeRoleMenu(): void {
-    if (!this.isRoleMenuOpen() && !this.isRoleMenuRendered()) {
-      return;
-    }
-    this.isRoleMenuOpen.set(false);
-    this.roleMenuAnimState.set('closed');
-    this.clearRoleTimer();
-    this.roleCloseTimer = setTimeout(() => {
-      this.isRoleMenuRendered.set(false);
-      this.roleCloseTimer = null;
-    }, 120);
   }
 
   private openProfileMenu(): void {
@@ -156,13 +113,6 @@ export class AppTopbarComponent {
       this.isProfileMenuRendered.set(false);
       this.profileCloseTimer = null;
     }, 120);
-  }
-
-  private clearRoleTimer(): void {
-    if (this.roleCloseTimer !== null) {
-      clearTimeout(this.roleCloseTimer);
-      this.roleCloseTimer = null;
-    }
   }
 
   private clearProfileTimer(): void {

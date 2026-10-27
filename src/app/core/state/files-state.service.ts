@@ -1,11 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { AuthApiService } from '../api/auth-api.service';
 import { FilesApiService } from '../api/files-api.service';
-import {
-  formatFileSize,
-  MOCK_FILES,
-  MOCK_FOLDERS,
-  SEARCH_SUGGESTIONS,
-} from '../mocks/workspace.mock';
+import { formatFileSize, SEARCH_SUGGESTIONS } from '../mocks/workspace.mock';
 import {
   FileItem,
   FileSystemEntry,
@@ -19,15 +15,20 @@ import {
   SearchResultsView,
   WorkspaceFileType,
 } from '../models/workspace.models';
+import { HistoryStateService } from './history-state.service';
 import { RoleStateService } from './role-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class FilesStateService {
   private readonly filesApi = inject(FilesApiService);
+  private readonly authApi = inject(AuthApiService);
   private readonly roleState = inject(RoleStateService);
+  private readonly historyState = inject(HistoryStateService);
 
-  private readonly foldersState = signal<FolderItem[]>([...MOCK_FOLDERS]);
-  private readonly filesState = signal<FileItem[]>([...MOCK_FILES]);
+  private readonly foldersState = signal<FolderItem[]>([]);
+  private readonly filesState = signal<FileItem[]>([]);
+  private readonly searchedFoldersState = signal<FolderItem[] | null>(null);
+  private readonly searchedFilesState = signal<FileItem[] | null>(null);
   private readonly activeFolderIdState = signal<string | null>(null);
   private readonly viewModeState = signal<FilesViewMode>('list');
   private readonly searchQueryState = signal<string>('');
@@ -177,25 +178,31 @@ export class FilesStateService {
       };
     }
 
-    const matchedFolders = this.foldersState()
-      .filter((folder) => folder.name.toLowerCase().includes(normalized))
-      .map<SearchFolderHit>((folder) => ({
-        id: folder.id,
-        name: folder.name,
-        pathLabel: this.getFolderPathLabel(folder.parentId),
-      }));
+    const sourceFolders =
+      this.searchedFoldersState() ??
+      this.foldersState().filter((folder) =>
+        folder.name.toLowerCase().includes(normalized)
+      );
 
-    const matchedFiles = this.filesState()
-      .filter((file) => file.name.toLowerCase().includes(normalized))
-      .map<SearchFileHit>((file) => ({
-        id: file.id,
-        name: file.name,
-        type: file.type,
-        folderId: file.folderId,
-        pathLabel: this.getFolderPathLabel(file.folderId),
-        sizeLabel: formatFileSize(file.sizeMb),
-        ownerId: file.ownerId,
-      }));
+    const sourceFiles =
+      this.searchedFilesState() ??
+      this.filesState().filter((file) => file.name.toLowerCase().includes(normalized));
+
+    const matchedFolders = sourceFolders.map<SearchFolderHit>((folder) => ({
+      id: folder.id,
+      name: folder.name,
+      pathLabel: this.getFolderPathLabel(folder.parentId),
+    }));
+
+    const matchedFiles = sourceFiles.map<SearchFileHit>((file) => ({
+      id: file.id,
+      name: file.name,
+      type: file.type,
+      folderId: file.folderId,
+      pathLabel: this.getFolderPathLabel(file.folderId),
+      sizeLabel: formatFileSize(file.sizeMb),
+      ownerId: file.ownerId,
+    }));
 
     return {
       query: rawQuery,
@@ -223,14 +230,31 @@ export class FilesStateService {
   }
 
   async loadSnapshot(): Promise<void> {
+    if (!this.authApi.hasToken()) {
+      this.foldersState.set([]);
+      this.filesState.set([]);
+      return;
+    }
     this.loadingState.set(true);
     try {
       const snapshot = await this.filesApi.fetchSnapshot();
+      this.roleState.registerKnownAuthors(snapshot.authors);
       this.foldersState.set(snapshot.folders);
       this.filesState.set(snapshot.files);
+    } catch {
+      this.foldersState.set([]);
+      this.filesState.set([]);
     } finally {
       this.loadingState.set(false);
     }
+  }
+
+  clear(): void {
+    this.foldersState.set([]);
+    this.filesState.set([]);
+    this.searchedFoldersState.set(null);
+    this.searchedFilesState.set(null);
+    this.activeFolderIdState.set(null);
   }
 
   setActiveFolder(folderId: string | null): void {
@@ -242,7 +266,25 @@ export class FilesStateService {
   }
 
   setSearchQuery(query: string): void {
-    this.searchQueryState.set(query.trim());
+    const trimmed = query.trim();
+    this.searchQueryState.set(trimmed);
+    this.searchedFoldersState.set(null);
+    this.searchedFilesState.set(null);
+
+    if (!trimmed || !this.authApi.hasToken()) {
+      return;
+    }
+
+    void this.filesApi
+      .searchSnapshot(trimmed)
+      .then((res) => {
+        if (this.searchQueryState() === trimmed) {
+          this.roleState.registerKnownAuthors(res.authors);
+          this.searchedFoldersState.set(res.folders);
+          this.searchedFilesState.set(res.files);
+        }
+      })
+      .catch(() => undefined);
   }
 
   getChildFolders(parentId: string | null): FolderItem[] {
@@ -329,24 +371,37 @@ export class FilesStateService {
       createdBy: this.roleState.user().id,
     });
     await this.loadSnapshot();
+    void this.historyState.hydrateFromApi();
     this.closeCreateFolderDialog();
   }
 
-  async uploadFile(fileName?: string, fileType: WorkspaceFileType = 'pdf', sizeMb = 1.4): Promise<void> {
+  async uploadFile(
+    fileName?: string,
+    fileType: WorkspaceFileType = 'pdf',
+    sizeMb = 1.4,
+    file?: File
+  ): Promise<void> {
     if (!this.roleState.can().canUpload) {
       this.closeUploadFileDialog();
       return;
     }
-    const resolvedName = fileName?.trim() || 'Новий конспект.pdf';
+    const resolvedName = file?.name || fileName?.trim() || 'Новий конспект.pdf';
     await this.filesApi.uploadFile({
       name: resolvedName,
       type: fileType,
       sizeMb,
       folderId: this.activeFolderIdState(),
       ownerId: this.roleState.user().id,
+      file,
     });
     await this.loadSnapshot();
+    void this.roleState.refreshGroupInfo();
+    void this.historyState.hydrateFromApi();
     this.closeUploadFileDialog();
+  }
+
+  async downloadFile(fileId: string, fileName: string): Promise<void> {
+    await this.filesApi.downloadFile(fileId, fileName);
   }
 
   async confirmRename(newName: string): Promise<void> {
@@ -359,8 +414,10 @@ export class FilesStateService {
       kind: target.kind,
       name: newName,
     });
+    this.roleState.registerKnownAuthors(snapshot.authors);
     this.foldersState.set(snapshot.folders);
     this.filesState.set(snapshot.files);
+    void this.historyState.hydrateFromApi();
     this.closeRenameDialog();
   }
 
@@ -373,6 +430,7 @@ export class FilesStateService {
       return;
     }
     const snapshot = await this.filesApi.togglePin({ id, kind });
+    this.roleState.registerKnownAuthors(snapshot.authors);
     this.foldersState.set(snapshot.folders);
     this.filesState.set(snapshot.files);
   }
@@ -386,8 +444,11 @@ export class FilesStateService {
       id: target.id,
       kind: target.kind,
     });
+    this.roleState.registerKnownAuthors(snapshot.authors);
     this.foldersState.set(snapshot.folders);
     this.filesState.set(snapshot.files);
+    void this.roleState.refreshGroupInfo();
+    void this.historyState.hydrateFromApi();
     this.closeDeleteDialog();
   }
 }

@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { UiBadgeComponent, UiButtonDirective, UiIconComponent } from '@ui';
+import { UiBadgeComponent, UiButtonDirective } from '@ui';
 import { HeroPreviewCardComponent } from '../hero-preview-card/hero-preview-card';
 
 @Component({
   selector: 'app-landing-hero',
-  imports: [RouterLink, UiBadgeComponent, UiButtonDirective, UiIconComponent, HeroPreviewCardComponent],
+  imports: [RouterLink, UiBadgeComponent, UiButtonDirective, HeroPreviewCardComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'contents',

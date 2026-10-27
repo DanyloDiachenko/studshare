@@ -9,6 +9,7 @@ export interface MemberUser {
   readonly middleName?: string;
   readonly email: string;
   readonly role: UserRole;
+  readonly groupId?: string | null;
   readonly canUpload: boolean;
   readonly joinedAt: string;
 }
@@ -42,6 +43,10 @@ export interface ChangePasswordPayload {
   readonly repeatPassword: string;
 }
 
+export interface DeleteAccountPayload {
+  readonly password: string;
+}
+
 export interface RolePermissions {
   readonly canUpload: boolean;
   readonly canPin: boolean;
@@ -52,12 +57,8 @@ export interface RolePermissions {
   readonly canEditGroup: boolean;
 }
 
-export interface RoleDemoPreset {
-  readonly userId: string;
-  readonly label: string;
-}
-
 export interface GroupInfo {
+  readonly id?: string;
   readonly name: string;
   readonly faculty: string;
   readonly createdAt: string;
@@ -66,10 +67,9 @@ export interface GroupInfo {
   readonly storagePercent: number;
 }
 
-export interface GroupUploadSettings {
-  readonly allowStudentUploads: boolean;
-  readonly allowStudentRenameOwn: boolean;
-  readonly maxFileSizeMb: number;
+export interface CreateGroupPayload {
+  readonly name: string;
+  readonly faculty: string;
 }
 
 export interface UpdateGroupInfoPayload {

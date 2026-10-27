@@ -1,50 +1,55 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
+import { ApiUserResponse, mapApiUserToMember } from '../api/api.models';
+import { AuthApiService } from '../api/auth-api.service';
 import { WorkspaceApiService } from '../api/workspace-api.service';
 import {
+  EMPTY_GROUP_INFO,
+  EMPTY_USER,
   formatUserFullName,
   formatUserInitials,
   getUserAvatarTone,
-  MOCK_GROUP,
-  MOCK_INVITATIONS,
-  MOCK_USERS,
-  ROLE_DEMO_PRESETS,
   ROLE_LABELS,
 } from '../mocks/workspace.mock';
 import {
   ChangePasswordPayload,
+  DeleteAccountPayload,
+  CreateGroupPayload,
   EditMemberPayload,
   GroupInfo,
-  GroupUploadSettings,
   MemberRowView,
   MemberUser,
   PendingInvitation,
-  RoleDemoPreset,
   RolePermissions,
   UpdateGroupInfoPayload,
   UpdateProfilePayload,
   UserRole,
 } from '../models/workspace.models';
+import { HistoryStateService } from './history-state.service';
 
 @Injectable({ providedIn: 'root' })
 export class RoleStateService {
   private readonly workspaceApi = inject(WorkspaceApiService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly historyState = inject(HistoryStateService);
 
-  private readonly membersState = signal<MemberUser[]>([...MOCK_USERS]);
-  private readonly invitationsState = signal<PendingInvitation[]>([...MOCK_INVITATIONS]);
-  private readonly groupState = signal<GroupInfo>({ ...MOCK_GROUP });
-  private readonly uploadSettingsState = signal<GroupUploadSettings>({
-    allowStudentUploads: true,
-    allowStudentRenameOwn: true,
-    maxFileSizeMb: 50,
-  });
-  private readonly presetsState = signal<RoleDemoPreset[]>([...ROLE_DEMO_PRESETS]);
-  private readonly activeUserIdState = signal<string>('u1');
+  private readonly currentUserState = signal<MemberUser | null>(null);
+  private readonly membersState = signal<MemberUser[]>([]);
+  private readonly knownAuthorsState = signal<Record<string, MemberUser>>({});
+  private readonly invitationsState = signal<PendingInvitation[]>([]);
+  private readonly groupState = signal<GroupInfo | null>(null);
+  private readonly createGroupDialogOpenState = signal<boolean>(false);
 
-  readonly group = this.groupState.asReadonly();
   readonly members = this.membersState.asReadonly();
   readonly pendingInvitations = this.invitationsState.asReadonly();
-  readonly uploadSettings = this.uploadSettingsState.asReadonly();
-  readonly demoPresets = this.presetsState.asReadonly();
+  readonly isCreateGroupDialogOpen = this.createGroupDialogOpenState.asReadonly();
+
+  readonly hasGroup = computed<boolean>(
+    () => this.groupState() !== null || Boolean(this.currentUserState()?.groupId)
+  );
+
+  readonly group = computed<GroupInfo>(
+    () => this.groupState() ?? EMPTY_GROUP_INFO
+  );
 
   readonly memberRows = computed<MemberRowView[]>(() =>
     this.membersState().map((member) => ({
@@ -63,9 +68,13 @@ export class RoleStateService {
   );
 
   readonly user = computed<MemberUser>(() => {
-    const id = this.activeUserIdState();
-    const list = this.membersState();
-    return list.find((item) => item.id === id) ?? list[0];
+    const current = this.currentUserState();
+    if (!current) {
+      return EMPTY_USER;
+    }
+    return (
+      this.membersState().find((item) => item.id === current.id) ?? current
+    );
   });
 
   readonly userFullName = computed(() => formatUserFullName(this.user()));
@@ -92,31 +101,142 @@ export class RoleStateService {
     void this.hydrateFromApi();
   }
 
-  async hydrateFromApi(): Promise<void> {
-    const [group, members, invitations, uploadSettings, presets] = await Promise.all([
-      this.workspaceApi.fetchGroupInfo(),
-      this.workspaceApi.fetchMembers(),
-      this.workspaceApi.fetchPendingInvitations(),
-      this.workspaceApi.fetchGroupUploadSettings(),
-      this.workspaceApi.fetchRoleDemoPresets(),
-    ]);
-    this.groupState.set(group);
-    this.membersState.set(members);
-    this.invitationsState.set(invitations);
-    this.uploadSettingsState.set(uploadSettings);
-    this.presetsState.set(presets);
+  openCreateGroupDialog(): void {
+    this.createGroupDialogOpenState.set(true);
   }
 
-  setUserId(userId: string): void {
-    this.activeUserIdState.set(userId);
+  closeCreateGroupDialog(): void {
+    this.createGroupDialogOpenState.set(false);
+  }
+
+  async hydrateFromApi(): Promise<void> {
+    if (!this.authApi.hasToken()) {
+      this.currentUserState.set(null);
+      this.groupState.set(null);
+      this.membersState.set([]);
+      this.invitationsState.set([]);
+      return;
+    }
+
+    try {
+      const me = await this.workspaceApi.fetchCurrentUser();
+      this.currentUserState.set(me);
+
+      if (!me.groupId) {
+        this.groupState.set(null);
+        this.membersState.set([]);
+        this.invitationsState.set([]);
+        return;
+      }
+
+      const [groupRes, membersRes] = await Promise.allSettled([
+        this.workspaceApi.fetchGroupInfo(),
+        this.workspaceApi.fetchMembersBundle(),
+      ]);
+
+      if (groupRes.status === 'fulfilled') {
+        this.groupState.set(groupRes.value);
+      } else {
+        this.groupState.set(null);
+      }
+
+      if (membersRes.status === 'fulfilled') {
+        const list = membersRes.value.members;
+        const hasMe = list.some((m) => m.id === me.id);
+        this.membersState.set(hasMe ? list : [me, ...list]);
+        this.invitationsState.set(membersRes.value.invitations);
+      } else {
+        this.membersState.set([me]);
+        this.invitationsState.set([]);
+      }
+    } catch {
+      return;
+    }
+  }
+
+  async applyAuthenticatedUser(apiUser: ApiUserResponse): Promise<void> {
+    const mapped = mapApiUserToMember(apiUser);
+    this.currentUserState.set(mapped);
+    await Promise.allSettled([
+      this.hydrateFromApi(),
+      this.historyState.hydrateFromApi(),
+    ]);
+  }
+
+  async createGroup(payload: CreateGroupPayload): Promise<GroupInfo> {
+    const created = await this.workspaceApi.createGroup(payload);
+    this.groupState.set(created);
+
+    const existing = this.currentUserState();
+    if (existing) {
+      const promoted: MemberUser = {
+        ...existing,
+        role: 'studcurator',
+        canUpload: true,
+        groupId: created.id ?? 'created',
+      };
+      this.currentUserState.set(promoted);
+      this.membersState.set([promoted]);
+      this.invitationsState.set([]);
+    }
+
+    this.closeCreateGroupDialog();
+    await Promise.allSettled([
+      this.hydrateFromApi(),
+      this.historyState.hydrateFromApi(),
+    ]);
+    return created;
+  }
+
+  async refreshGroupInfo(): Promise<void> {
+    if (!this.authApi.hasToken() || !this.hasGroup()) {
+      return;
+    }
+    try {
+      const group = await this.workspaceApi.fetchGroupInfo();
+      this.groupState.set(group);
+    } catch {
+      return;
+    }
+  }
+
+  registerKnownAuthors(authors: MemberUser[]): void {
+    if (authors.length === 0) {
+      return;
+    }
+    this.knownAuthorsState.update((prev) => {
+      const next = { ...prev };
+      for (const author of authors) {
+        if (!next[author.id]) {
+          next[author.id] = author;
+        }
+      }
+      return next;
+    });
   }
 
   getUserById(userId: string): MemberUser | undefined {
-    return this.membersState().find((member) => member.id === userId);
+    const current = this.currentUserState();
+    if (current && current.id === userId) {
+      return current;
+    }
+    return (
+      this.membersState().find((member) => member.id === userId) ??
+      this.knownAuthorsState()[userId]
+    );
   }
 
   getRoleLabel(role: UserRole): string {
     return ROLE_LABELS[role];
+  }
+
+  logout(): void {
+    this.authApi.clearToken();
+    this.currentUserState.set(null);
+    this.groupState.set(null);
+    this.membersState.set([]);
+    this.invitationsState.set([]);
+    this.historyState.clear();
   }
 
   async toggleMemberUpload(userId: string, canUpload: boolean): Promise<void> {
@@ -128,22 +248,17 @@ export class RoleStateService {
           : member
       )
     );
+    void this.historyState.hydrateFromApi();
   }
 
   async editMember(payload: EditMemberPayload): Promise<void> {
     const updated = await this.workspaceApi.editMember(payload);
     this.membersState.update((list) =>
-      list.map((member) =>
-        member.id === updated.id
-          ? {
-              ...member,
-              firstName: updated.firstName.trim() || member.firstName,
-              lastName: updated.lastName.trim() || member.lastName,
-              middleName: updated.middleName?.trim() || undefined,
-            }
-          : member
-      )
+      list.map((member) => (member.id === updated.id ? updated : member))
     );
+    if (this.currentUserState()?.id === updated.id) {
+      this.currentUserState.set(updated);
+    }
   }
 
   async updateCurrentUserProfile(payload: Omit<UpdateProfilePayload, 'id'>): Promise<void> {
@@ -152,23 +267,19 @@ export class RoleStateService {
       id: currentId,
       ...payload,
     });
+    this.currentUserState.set(updated);
     this.membersState.update((list) =>
-      list.map((member) =>
-        member.id === updated.id
-          ? {
-              ...member,
-              firstName: updated.firstName.trim() || member.firstName,
-              lastName: updated.lastName.trim() || member.lastName,
-              middleName: updated.middleName?.trim() || undefined,
-              email: updated.email.trim() || member.email,
-            }
-          : member
-      )
+      list.map((member) => (member.id === updated.id ? updated : member))
     );
   }
 
   async changePassword(payload: ChangePasswordPayload): Promise<void> {
     await this.workspaceApi.changePassword(payload);
+  }
+
+  async deleteAccount(payload: DeleteAccountPayload): Promise<void> {
+    await this.workspaceApi.deleteAccount(payload.password);
+    this.logout();
   }
 
   async assignStarosta(userId: string): Promise<void> {
@@ -187,12 +298,14 @@ export class RoleStateService {
         return member;
       })
     );
+    void this.historyState.hydrateFromApi();
   }
 
   async removeMember(userId: string): Promise<void> {
     const removedId = await this.workspaceApi.removeMember(userId);
     this.membersState.update((list) => list.filter((member) => member.id !== removedId));
     this.syncMembersLabel();
+    void this.historyState.hydrateFromApi();
   }
 
   async inviteMember(email: string): Promise<void> {
@@ -206,11 +319,9 @@ export class RoleStateService {
   }
 
   async resendInvitation(invitationId: string): Promise<void> {
-    const id = await this.workspaceApi.resendInvitation(invitationId);
+    const updated = await this.workspaceApi.resendInvitation(invitationId);
     this.invitationsState.update((list) =>
-      list.map((inv) =>
-        inv.id === id ? { ...inv, invitedAt: 'Сьогодні', expiresIn: '3 дні' } : inv
-      )
+      list.map((inv) => (inv.id === updated.id ? updated : inv))
     );
   }
 
@@ -222,28 +333,35 @@ export class RoleStateService {
 
   async updateGroupInfo(payload: UpdateGroupInfoPayload): Promise<void> {
     const updated = await this.workspaceApi.updateGroupInfo(payload);
-    this.groupState.update((group) => ({
-      ...group,
-      name: updated.name.trim() || group.name,
-      faculty: updated.faculty.trim() || group.faculty,
-    }));
+    this.groupState.set(updated);
+    void this.historyState.hydrateFromApi();
   }
 
-  async updateUploadSettings(partial: Partial<GroupUploadSettings>): Promise<void> {
-    const nextSettings: GroupUploadSettings = {
-      ...this.uploadSettingsState(),
-      ...partial,
-    };
-    const saved = await this.workspaceApi.updateGroupUploadSettings(nextSettings);
-    this.uploadSettingsState.set(saved);
+  async deleteGroup(confirmName: string): Promise<boolean> {
+    const deleted = await this.workspaceApi.deleteGroup(confirmName);
+    if (deleted) {
+      this.groupState.set(null);
+      this.membersState.set([]);
+      this.invitationsState.set([]);
+      const current = this.currentUserState();
+      if (current) {
+        this.currentUserState.set({ ...current, groupId: null });
+      }
+      this.historyState.clear();
+    }
+    return deleted;
   }
 
   private syncMembersLabel(): void {
     const mCount = this.membersState().length;
     const iCount = this.invitationsState().length;
-    this.groupState.update((group) => ({
-      ...group,
+    const currentGroup = this.groupState();
+    if (!currentGroup) {
+      return;
+    }
+    this.groupState.set({
+      ...currentGroup,
       membersLabel: `${mCount} учасників · ${iCount} запрошення`,
-    }));
+    });
   }
 }

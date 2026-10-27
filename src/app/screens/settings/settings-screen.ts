@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { GroupUploadSettings, UpdateGroupInfoPayload } from '@core/models/workspace.models';
+import { UpdateGroupInfoPayload } from '@core/models/workspace.models';
+import { FilesStateService } from '@core/state/files-state.service';
 import { RoleStateService } from '@core/state/role-state.service';
 import {
   UiButtonDirective,
@@ -11,7 +12,6 @@ import {
 } from '@ui';
 import { SettingsDangerZoneCardComponent } from './components/settings-danger-zone-card/settings-danger-zone-card';
 import { SettingsGroupInfoCardComponent } from './components/settings-group-info-card/settings-group-info-card';
-import { SettingsUploadRulesCardComponent } from './components/settings-upload-rules-card/settings-upload-rules-card';
 
 @Component({
   selector: 'app-settings-screen',
@@ -23,17 +23,16 @@ import { SettingsUploadRulesCardComponent } from './components/settings-upload-r
     UiButtonDirective,
     UiInputDirective,
     SettingsGroupInfoCardComponent,
-    SettingsUploadRulesCardComponent,
     SettingsDangerZoneCardComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './settings-screen.html',
 })
 export class SettingsScreenComponent {
-  private readonly roleState = inject(RoleStateService);
+  protected readonly roleState = inject(RoleStateService);
+  private readonly filesState = inject(FilesStateService);
 
   protected readonly group = this.roleState.group;
-  protected readonly uploadSettings = this.roleState.uploadSettings;
   protected readonly can = this.roleState.can;
 
   protected readonly deleteDialogOpen = signal(false);
@@ -43,17 +42,24 @@ export class SettingsScreenComponent {
     void this.roleState.updateGroupInfo(payload);
   }
 
-  protected onUploadSettingsChange(partial: Partial<GroupUploadSettings>): void {
-    void this.roleState.updateUploadSettings(partial);
-  }
-
   protected closeDeleteDialog(): void {
     this.deleteConfirmText.set('');
     this.deleteDialogOpen.set(false);
   }
 
-  protected confirmDeleteGroup(): void {
-    this.deleteConfirmText.set('');
-    this.deleteDialogOpen.set(false);
+  protected async confirmDeleteGroup(): Promise<void> {
+    const confirmName = this.deleteConfirmText().trim();
+    if (!confirmName) {
+      return;
+    }
+    try {
+      const deleted = await this.roleState.deleteGroup(confirmName);
+      if (deleted) {
+        this.filesState.clear();
+      }
+    } finally {
+      this.deleteConfirmText.set('');
+      this.deleteDialogOpen.set(false);
+    }
   }
 }

@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { UiIconName } from '@ui';
+import { AuthApiService } from '../api/auth-api.service';
 import { WorkspaceApiService } from '../api/workspace-api.service';
-import { MOCK_HISTORY } from '../mocks/workspace.mock';
 import {
   HistoryDayGroup,
   HistoryEventItem,
@@ -79,8 +79,9 @@ export const HISTORY_FILTERS: readonly HistoryFilterOption[] = [
 @Injectable({ providedIn: 'root' })
 export class HistoryStateService {
   private readonly workspaceApi = inject(WorkspaceApiService);
+  private readonly authApi = inject(AuthApiService);
 
-  private readonly eventsState = signal<HistoryEventItem[]>([...MOCK_HISTORY]);
+  private readonly eventsState = signal<HistoryEventItem[]>([]);
   private readonly activeFilterState = signal<HistoryFilterKind>('all');
 
   readonly filterOptions = HISTORY_FILTERS;
@@ -115,8 +116,20 @@ export class HistoryStateService {
   }
 
   async hydrateFromApi(): Promise<void> {
-    const events = await this.workspaceApi.fetchHistoryEvents();
-    this.eventsState.set(events);
+    if (!this.authApi.hasToken()) {
+      this.eventsState.set([]);
+      return;
+    }
+    try {
+      const events = await this.workspaceApi.fetchHistoryEvents();
+      this.eventsState.set(events);
+    } catch {
+      this.eventsState.set([]);
+    }
+  }
+
+  clear(): void {
+    this.eventsState.set([]);
   }
 
   setFilter(filter: HistoryFilterKind): void {

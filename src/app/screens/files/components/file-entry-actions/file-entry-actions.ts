@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FileSystemEntry } from '@core/models/workspace.models';
+import { FilesStateService } from '@core/state/files-state.service';
 import { RoleStateService } from '@core/state/role-state.service';
 import { UiButtonDirective, UiIconComponent } from '@ui';
 
@@ -38,6 +39,7 @@ interface MenuPosition {
 })
 export class FileEntryActionsComponent {
   protected readonly roleState = inject(RoleStateService);
+  private readonly filesState = inject(FilesStateService);
   private readonly hostRef = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -137,6 +139,14 @@ export class FileEntryActionsComponent {
   protected handleDelete(): void {
     this.closeMenu();
     this.deleteRequested.emit(this.entry());
+  }
+
+  protected handleDownload(): void {
+    const current = this.entry();
+    this.closeMenu();
+    if (current.kind === 'file') {
+      void this.filesState.downloadFile(current.id, current.name);
+    }
   }
 
   private updatePosition(): void {

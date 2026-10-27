@@ -3,36 +3,80 @@
   subtitle="Після реєстрації студкуратор додасть вас до групи за email або запрошенням."
 >
   <form class="space-y-4" (submit)="onSubmit($event)">
+    @if (errorMessage()) {
+      <p class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        {{ errorMessage() }}
+      </p>
+    }
     <div class="grid grid-cols-2 gap-3">
       <div class="grid gap-2">
         <label uiLabel for="first">Ім'я</label>
-        <input uiInput id="first" autocomplete="given-name" />
+        <input
+          uiInput
+          id="first"
+          name="firstName"
+          autocomplete="given-name"
+          [ngModel]="firstName()"
+          (ngModelChange)="firstName.set($event)"
+        />
       </div>
       <div class="grid gap-2">
         <label uiLabel for="last">Прізвище</label>
-        <input uiInput id="last" autocomplete="family-name" />
+        <input
+          uiInput
+          id="last"
+          name="lastName"
+          autocomplete="family-name"
+          [ngModel]="lastName()"
+          (ngModelChange)="lastName.set($event)"
+        />
       </div>
     </div>
     <div class="grid gap-2">
       <label uiLabel for="middle">По батькові</label>
-      <input uiInput id="middle" autocomplete="additional-name" />
+      <input
+        uiInput
+        id="middle"
+        name="middleName"
+        autocomplete="additional-name"
+        [ngModel]="middleName()"
+        (ngModelChange)="middleName.set($event)"
+      />
     </div>
     <div class="grid gap-2">
       <label uiLabel for="email">Email</label>
       <input
         uiInput
         id="email"
+        name="email"
         type="email"
         placeholder="name@lpi.edu.ua"
         autocomplete="email"
+        [ngModel]="email()"
+        (ngModelChange)="email.set($event)"
       />
     </div>
     <div class="grid gap-2">
       <label uiLabel for="password">Пароль</label>
-      <input uiInput id="password" type="password" autocomplete="new-password" />
+      <input
+        uiInput
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        [ngModel]="password()"
+        (ngModelChange)="password.set($event)"
+      />
       <p class="text-xs text-muted-foreground">Щонайменше 8 символів.</p>
     </div>
-    <button uiButton type="submit" variant="default" size="md" class="w-full">
+    <button
+      uiButton
+      type="submit"
+      variant="default"
+      size="md"
+      class="w-full"
+      [disabled]="isSubmitting()"
+    >
       Зареєструватись
     </button>
   </form>

@@ -7,10 +7,25 @@
 
   <div class="mx-3 rounded-xl border border-sidebar-border bg-sidebar-accent/50 p-3">
     <p class="text-xs uppercase tracking-wider text-sidebar-foreground/60">Група</p>
-    <p class="mt-0.5 text-lg font-semibold text-white">{{ roleState.group().name }}</p>
-    <p class="mt-1 text-xs text-sidebar-foreground/60">
-      {{ roleState.group().membersLabel }}
-    </p>
+    @if (roleState.hasGroup()) {
+      <p class="mt-0.5 text-lg font-semibold text-white">{{ roleState.group().name }}</p>
+      <p class="mt-1 text-xs text-sidebar-foreground/60">
+        {{ roleState.group().membersLabel }}
+      </p>
+    } @else {
+      <p class="mt-0.5 text-sm font-medium text-white">Ви ще не в групі</p>
+      <button
+        type="button"
+        uiButton
+        variant="default"
+        size="sm"
+        class="mt-2.5 w-full"
+        (click)="roleState.openCreateGroupDialog()"
+      >
+        <ui-icon name="plus" />
+        Створити групу
+      </button>
+    }
   </div>
 
   <nav aria-label="Основна навігація" class="mt-5 flex-1 px-3">
@@ -39,25 +54,22 @@
     </ul>
   </nav>
 
-  <div class="m-3 rounded-xl border border-sidebar-border p-3">
-    <div class="flex items-center justify-between text-xs text-sidebar-foreground/70">
-      <span>Сховище групи</span>
-      <span
-        class="rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-      >
-        Ліміти TBD
-      </span>
+  @if (roleState.hasGroup()) {
+    <div class="m-3 rounded-xl border border-sidebar-border p-3">
+      <div class="flex items-center justify-between text-xs text-sidebar-foreground/70">
+        <span>Сховище групи</span>
+      </div>
+      <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-sidebar-accent">
+        <div
+          class="h-full rounded-full bg-sidebar-primary"
+          [style.width.%]="roleState.group().storagePercent"
+        ></div>
+      </div>
+      <p class="mt-2 text-xs text-sidebar-foreground/60">
+        {{ roleState.group().storageUsedLabel }}
+      </p>
     </div>
-    <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-sidebar-accent">
-      <div
-        class="h-full rounded-full bg-sidebar-primary"
-        [style.width.%]="roleState.group().storagePercent"
-      ></div>
-    </div>
-    <p class="mt-2 text-xs text-sidebar-foreground/60">
-      {{ roleState.group().storageUsedLabel }}
-    </p>
-  </div>
+  }
 
   <a
     routerLink="/profile"

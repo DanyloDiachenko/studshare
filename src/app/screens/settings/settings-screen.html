@@ -1,64 +1,99 @@
-<div class="mx-auto max-w-3xl space-y-6">
-  <ui-page-header
-    title="Налаштування групи"
-    description="Основні дані групи та правила доступу до матеріалів."
-  />
+@if (!roleState.hasGroup()) {
+  <div class="mx-auto max-w-3xl py-12">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border bg-card p-8 text-center shadow-xs">
+        <div class="mx-auto grid size-12 place-items-center rounded-xl bg-accent text-primary">
+          <ui-icon name="users" svgClass="size-6" />
+        </div>
+        <h2 class="mt-4 text-lg font-semibold">Створити групу</h2>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Налаштуйте назву, факультет і запрошуйте учасників. При створенні ви автоматично станете студкуратором.
+        </p>
+        <div class="mt-6 flex justify-center">
+          <button
+            type="button"
+            uiButton
+            size="md"
+            (click)="roleState.openCreateGroupDialog()"
+          >
+            <ui-icon name="plus" />
+            Створити групу
+          </button>
+        </div>
+      </div>
 
-  @if (!can().canEditGroup) {
-    <p class="flex items-center gap-2 rounded-xl border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
-      <ui-icon name="lock" svgClass="size-4" />
-      Налаштування групи змінює студкуратор. Ви можете лише переглядати їх.
-    </p>
-  }
+      <div class="rounded-2xl border bg-card p-8 text-center shadow-xs">
+        <div class="mx-auto grid size-12 place-items-center rounded-xl bg-accent text-primary">
+          <ui-icon name="mail" svgClass="size-6" />
+        </div>
+        <h2 class="mt-4 text-lg font-semibold">Приєднатися до групи</h2>
+        <p class="mt-2 text-sm text-muted-foreground">
+          Студкуратор вашої групи може надіслати запрошення на вашу електронну пошту. Перейдіть за посиланням із листа — і ви автоматично станете учасником.
+        </p>
+        <p class="mt-4 flex items-start gap-2 rounded-xl bg-muted/60 px-4 py-3 text-left text-xs text-muted-foreground">
+          <ui-icon name="mail" svgClass="size-3.5 mt-0.5 shrink-0" />
+          Очікуйте листа від студкуратора на адресу, яку ви вказали під час реєстрації.
+        </p>
+      </div>
+    </div>
+  </div>
+} @else {
+  <div class="mx-auto max-w-3xl space-y-6">
+    <ui-page-header
+      title="Налаштування групи"
+      description="Основні дані групи та правила доступу до матеріалів."
+    />
 
-  <app-settings-group-info-card
-    [group]="group()"
-    [canEdit]="can().canEditGroup"
-    (saveGroupInfo)="onSaveGroupInfo($event)"
-  />
+    @if (!can().canEditGroup) {
+      <p class="flex items-center gap-2 rounded-xl border bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+        <ui-icon name="lock" svgClass="size-4" />
+        Налаштування групи змінює студкуратор. Ви можете лише переглядати їх.
+      </p>
+    }
 
-  <app-settings-upload-rules-card
-    [settings]="uploadSettings()"
-    [canEdit]="can().canEditGroup"
-    (settingsChange)="onUploadSettingsChange($event)"
-  />
+    <app-settings-group-info-card
+      [group]="group()"
+      [canEdit]="can().canEditGroup"
+      (saveGroupInfo)="onSaveGroupInfo($event)"
+    />
 
-  <app-settings-danger-zone-card
-    [canEdit]="can().canEditGroup"
-    [deleteDialogOpen]="deleteDialogOpen()"
-    (openDeleteDialog)="deleteDialogOpen.set(true)"
-  />
-</div>
+    <app-settings-danger-zone-card
+      [canEdit]="can().canEditGroup"
+      [deleteDialogOpen]="deleteDialogOpen()"
+      (openDeleteDialog)="deleteDialogOpen.set(true)"
+    />
+  </div>
 
-<ui-dialog
-  [open]="deleteDialogOpen()"
-  [title]="'Видалити групу ' + group().name + '?'"
-  description="Введіть назву групи для підтвердження. Усі учасники втратять доступ до матеріалів."
-  (openChange)="deleteDialogOpen.set($event)"
->
-  <input
-    uiInput
-    aria-label="Підтвердження назви групи"
-    [placeholder]="group().name"
-    [ngModel]="deleteConfirmText()"
-    (ngModelChange)="deleteConfirmText.set($event)"
-  />
-  <ng-container dialogFooter>
-    <button
-      uiButton
-      variant="outline"
-      type="button"
-      (click)="closeDeleteDialog()"
-    >
-      Скасувати
-    </button>
-    <button
-      uiButton
-      variant="destructive"
-      type="button"
-      (click)="confirmDeleteGroup()"
-    >
-      Видалити назавжди
-    </button>
-  </ng-container>
-</ui-dialog>
+  <ui-dialog
+    [open]="deleteDialogOpen()"
+    [title]="'Видалити групу ' + group().name + '?'"
+    description="Введіть назву групи для підтвердження. Усі учасники втратять доступ до матеріалів."
+    (openChange)="deleteDialogOpen.set($event)"
+  >
+    <input
+      uiInput
+      aria-label="Підтвердження назви групи"
+      [placeholder]="group().name"
+      [ngModel]="deleteConfirmText()"
+      (ngModelChange)="deleteConfirmText.set($event)"
+    />
+    <ng-container dialogFooter>
+      <button
+        uiButton
+        variant="outline"
+        type="button"
+        (click)="closeDeleteDialog()"
+      >
+        Скасувати
+      </button>
+      <button
+        uiButton
+        variant="destructive"
+        type="button"
+        (click)="confirmDeleteGroup()"
+      >
+        Видалити назавжди
+      </button>
+    </ng-container>
+  </ui-dialog>
+}

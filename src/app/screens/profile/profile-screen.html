@@ -21,4 +21,78 @@
   <app-profile-password-card
     (changePassword)="onChangePassword($event)"
   />
+
+  <div class="rounded-2xl border border-destructive/30 bg-card p-6">
+    <h2 class="text-base font-semibold text-destructive">Небезпечна зона</h2>
+    <p class="mt-1 text-sm text-muted-foreground">Ці дії не можна скасувати.</p>
+
+    <div class="mt-4 flex items-center justify-between gap-4">
+      <div>
+        <p class="text-sm font-medium">Видалити акаунт</p>
+        <p class="mt-0.5 text-sm text-muted-foreground">
+          Усі ваші дані будуть видалені назавжди.
+          @if (hasGroup() && user().role === 'studcurator') {
+            <span class="text-destructive">Спочатку видаліть групу або передайте права студкуратора.</span>
+          }
+        </p>
+      </div>
+      <button
+        type="button"
+        uiButton
+        variant="destructive"
+        size="sm"
+        class="shrink-0"
+        (click)="openDeleteDialog()"
+      >
+        Видалити акаунт
+      </button>
+    </div>
+  </div>
 </div>
+
+<ui-dialog
+  [open]="deleteDialogOpen()"
+  title="Видалити акаунт?"
+  description="Введіть пароль для підтвердження. Цю дію не можна скасувати."
+  (openChange)="!$event && closeDeleteDialog()"
+>
+  <div class="space-y-4">
+    @if (deleteError()) {
+      <p class="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        {{ deleteError() }}
+      </p>
+    }
+    <div class="grid gap-2">
+      <label uiLabel for="delete-account-password">Пароль</label>
+      <input
+        uiInput
+        id="delete-account-password"
+        type="password"
+        placeholder="Введіть ваш пароль"
+        [ngModel]="deletePassword()"
+        (ngModelChange)="deletePassword.set($event)"
+        (keydown.enter)="confirmDeleteAccount()"
+      />
+    </div>
+  </div>
+
+  <ng-container dialogFooter>
+    <button
+      type="button"
+      uiButton
+      variant="outline"
+      (click)="closeDeleteDialog()"
+    >
+      Скасувати
+    </button>
+    <button
+      type="button"
+      uiButton
+      variant="destructive"
+      [disabled]="isDeleting()"
+      (click)="confirmDeleteAccount()"
+    >
+      Видалити назавжди
+    </button>
+  </ng-container>
+</ui-dialog>

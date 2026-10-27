@@ -40,6 +40,7 @@ export class FilesDialogsComponent {
   protected readonly selectedFileName = signal('');
   private selectedFileType: WorkspaceFileType = 'pdf';
   private selectedFileSizeMb = 1.4;
+  private selectedFile: File | undefined;
 
   constructor() {
     effect(() => {
@@ -58,6 +59,7 @@ export class FilesDialogsComponent {
         this.selectedFileName.set('');
         this.selectedFileType = 'pdf';
         this.selectedFileSizeMb = 1.4;
+        this.selectedFile = undefined;
       }
     });
   }
@@ -71,6 +73,7 @@ export class FilesDialogsComponent {
     if (!file) {
       return;
     }
+    this.selectedFile = file;
     this.selectedFileName.set(file.name);
     this.selectedFileSizeMb = Math.max(0.1, +(file.size / (1024 * 1024)).toFixed(1));
     const lower = file.name.toLowerCase();
@@ -91,7 +94,8 @@ export class FilesDialogsComponent {
     void this.filesState.uploadFile(
       this.selectedFileName() || undefined,
       this.selectedFileType,
-      this.selectedFileSizeMb
+      this.selectedFileSizeMb,
+      this.selectedFile
     );
   }
 
