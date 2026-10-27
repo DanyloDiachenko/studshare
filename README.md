@@ -1,59 +1,59 @@
-# Studshare
+# StudShare — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+Клієнтська частина закритої платформи для студентської групи **«Платформа для структурування навчальних конспектів»**
+(ІП-44, НТУУ «КПІ ім. Ігоря Сікорського»). Серверна частина — у репозиторії `studshare-backend`.
 
-## Development server
+## Технології
 
-To start a local development server, run:
+Angular 21 (standalone-компоненти, signals, lazy-маршрути) · TypeScript 5.9 · Tailwind CSS 4 · RxJS 7
 
-```bash
-ng serve
+## Структура
+
+```
+src/app/
+  core/
+    api/           HTTP-клієнти: AuthApiService, FilesApiService, WorkspaceApiService
+    state/         стан на signals: RoleStateService, FilesStateService, HistoryStateService
+    interceptors/  authInterceptor — додає Authorization: Bearer до запитів /api
+    models/        типи інтерфейсу
+    mocks/         довідкові дані та форматери
+  layouts/app-shell/   каркас захищених сторінок: sidebar, topbar, mobile-nav
+  screens/             landing, auth (login / register / forgot-password), files, pinned,
+                       search, members, history, settings, profile
+  shared/ui/           UI-kit: button, input, dialog, badge, avatar, icon, switch, file-icon, page-header
+  app.routes.ts        маршрути (lazy loading)
+  app.config.ts        провайдери: router, HttpClient, інтерсептор
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Шари розділено так: **api** — тільки HTTP, **state** — стан і права (`can.canUpload`, `can.canPin`, …),
+**screens** — подання. Права на клієнті керують лише відображенням; остаточна перевірка — на сервері.
 
-## Code scaffolding
+## Запуск
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Потрібні Node.js та запущений бекенд (за замовчуванням `http://localhost:5239`).
 
 ```bash
-ng generate --help
+npm install
+npm start          # http://localhost:4200
 ```
 
-## Building
-
-To build the project run:
+Запити `/api` і `/uploads` проксуються на бекенд (`proxy.conf.json`). Якщо бекенд працює на іншому порту,
+змініть `target` у цьому файлі.
 
 ```bash
-ng build
+npm run build      # виробнича збірка у dist/
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Команда та ролі
 
-## Running unit tests
+| Учасник | Роль | Зона відповідальності |
+|---|---|---|
+| Дяченко Д.О. | Frontend | screens, core/api, core/state, shared/ui, layouts |
+| Давиденко Г.А. | Backend | Репозиторій `studshare-backend` |
+| Настенко А.Г. | QA | Тест-кейси, перевірка UI та сумісності браузерів |
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Робота з Git
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- `main` — стабільна гілка; `develop` — інтеграційна; `feature/<модуль>-<назва>` — гілка на задачу;
+- злиття лише через pull request зі схваленням іншого учасника;
+- повідомлення комітів: `feat|fix|docs|test|refactor: опис (#задача)`.
